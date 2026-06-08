@@ -12,7 +12,6 @@ import {
   Mail,
   Wrench,
   Bot,
-  ChevronRight,
 } from "lucide-react";
 
 const services = [
@@ -22,6 +21,7 @@ const services = [
     description:
       "Creamos sitios web modernos para pequeños y medianos negocios. Desde landing pages hasta plataformas completas con diseño único.",
     code: "import { Site } from 'toalesco'",
+    href: "#web",
     mailSubject: "Quiero%20una%20p%C3%A1gina%20web%20para%20mi%20negocio",
     cta: "Cotiza tu página web",
   },
@@ -31,6 +31,7 @@ const services = [
     description:
       "Automatizamos tareas repetitivas: facturación, inventarios, reportes y mailing. Menos trabajo manual, más eficiencia.",
     code: "pipeline = workflow.auto()",
+    href: "#automation",
     mailSubject: "Quiero%20automatizar%20procesos%20de%20mi%20negocio",
     cta: "Cotiza tu automatización",
   },
@@ -40,6 +41,7 @@ const services = [
     description:
       "Mantenimiento y reparación de equipos computacionales. Servicio presencial y remoto con respuesta rápida y solución garantizada.",
     code: "status: online · ping 12ms",
+    href: "#soporte",
     mailSubject: "Necesito%20soporte%20t%C3%A9cnico%20o%20reparaci%C3%B3n",
     cta: "Agenda una revisión",
   },
@@ -49,6 +51,7 @@ const services = [
     description:
       "SaaS completo para la gestión digital de clubes deportivos: estadísticas, tienda online, socios, votación MVP y más.",
     code: "<Club theme='custom' />",
+    href: "#clubes",
     mailSubject: "Quiero%20la%20plataforma%20para%20mi%20club%20deportivo",
     cta: "Quiero esto para mi club",
   },
@@ -78,6 +81,13 @@ const stats = [
   { number: "2+", label: "Años de experiencia" },
   { number: "100%", label: "Satisfacción" },
   { number: "24/7", label: "Soporte técnico" },
+];
+
+const navLinks = [
+  { label: "paginas-web", href: "#web" },
+  { label: "automatizaciones", href: "#automation" },
+  { label: "soporte", href: "#soporte" },
+  { label: "saas-clubes", href: "#clubes" },
 ];
 
 function ParticleNetwork() {
@@ -110,10 +120,7 @@ function ParticleNetwork() {
       });
     }
 
-    const onMouse = (e: MouseEvent) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-    };
+    const onMouse = (e: MouseEvent) => { mouse.x = e.clientX; mouse.y = e.clientY; };
     window.addEventListener("mousemove", onMouse);
     window.addEventListener("mouseleave", () => { mouse.x = -1000; mouse.y = -1000; });
 
@@ -162,12 +169,7 @@ function ParticleNetwork() {
     };
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 pointer-events-none z-10"
-    />
-  );
+  return <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-10" />;
 }
 
 function TypingStatus() {
@@ -192,15 +194,14 @@ function TypingStatus() {
   return (
     <span className="font-mono tracking-wide">
       {text}
-      {cursor && text.length < fullText.length ? (
-        <span className="text-[#00D2FF]">_</span>
-      ) : null}
+      {cursor && text.length < fullText.length ? <span className="text-[#00D2FF]">_</span> : null}
     </span>
   );
 }
 
 export default function HomePage() {
   const [scrolled, setScrolled] = useState(false);
+  const [hoveredLink, setHoveredLink] = useState<string | null>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -230,28 +231,63 @@ export default function HomePage() {
         }`}
       >
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <motion.span
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-xl font-bold tracking-tight text-white"
-          >
+          {/* Logo */}
+          <span className="text-xl font-bold tracking-tight text-white shrink-0">
             TOALESCO
-          </motion.span>
+          </span>
+
+          {/* Desktop nav links */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                onMouseEnter={() => setHoveredLink(link.label)}
+                onMouseLeave={() => setHoveredLink(null)}
+                className="relative px-3 py-1.5 text-xs font-mono text-[#8A9AAB] hover:text-[#00D2FF] transition-colors"
+              >
+                {hoveredLink === link.label ? (
+                  <span>{">"} /{link.label}</span>
+                ) : (
+                  <span>/{link.label}</span>
+                )}
+              </a>
+            ))}
+          </nav>
+
+          {/* Right side */}
           <div className="flex items-center gap-4">
-            <motion.span
+            {/* Uptime indicator */}
+            <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.8 }}
-              className="hidden sm:flex items-center gap-1.5 text-xs text-[#8A9AAB] font-mono"
+              className="hidden lg:flex items-center gap-2 text-[10px] font-mono text-[#8A9AAB] tracking-wider uppercase"
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-[#00E676] animate-pulse shadow-[0_0_6px_#00E676]" />
-              Soporte 24/7
-            </motion.span>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00E676] opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00E676] shadow-[0_0_6px_#00E676]" />
+              </span>
+              SYS_STATUS: OPERANDO 24/7
+            </motion.div>
+
+            {/* [ Iniciar_Sesión ] */}
             <a
               href="/login"
-              className="inline-flex h-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] px-4 text-sm font-medium text-[#EDEDED] hover:bg-white/[0.06] hover:border-[#00D2FF]/30 transition-all"
+              className="hidden sm:inline-flex items-center gap-1 text-xs font-mono text-[#8A9AAB] hover:text-[#EDEDED] transition-colors"
             >
-              Iniciar Sesión
+              <span className="text-[#5a6a7a]">[</span>
+              <span>Iniciar_Sesión</span>
+              <span className="text-[#5a6a7a]">]</span>
+            </a>
+
+            {/* EJECUTAR_CONTACTO > */}
+            <a
+              href="mailto:toalesco@tutamail.com?subject=Quiero%20m%C3%A1s%20informaci%C3%B3n"
+              className="inline-flex h-8 items-center justify-center rounded-md border border-[#00D2FF]/30 bg-[#00D2FF]/5 px-3 text-[11px] font-mono font-medium text-[#00D2FF] hover:bg-[#00D2FF]/10 hover:border-[#00D2FF]/50 transition-all"
+            >
+              EJECUTAR_CONTACTO
+              <ArrowRight className="ml-1.5 h-3 w-3" />
             </a>
           </div>
         </div>
@@ -264,7 +300,7 @@ export default function HomePage() {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-[#00d2ff]/[0.03] blur-[150px]" />
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#00D2FF]/20 to-transparent" />
           <div
-            className="absolute inset-0 opacity-[0.03]"
+            className="absolute inset-0 opacity-[0.025]"
             style={{
               backgroundImage:
                 "linear-gradient(0deg, transparent 24%, rgba(0,210,255,0.03) 25%, rgba(0,210,255,0.03) 26%, transparent 27%, transparent 74%, rgba(0,210,255,0.03) 75%, rgba(0,210,255,0.03) 76%, transparent 77%, transparent)",
@@ -304,30 +340,19 @@ export default function HomePage() {
                     <span className="absolute inset-0 bg-[#00D2FF]/5 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                   </span>
                 </span>
-                {/* Glitch layers */}
                 <span
                   className="absolute inset-0 text-[#00D2FF] opacity-0 group-hover:opacity-30 transition-all duration-200 pointer-events-none"
-                  style={{
-                    clipPath: "inset(20% 0 40% 0)",
-                    transform: "translate(-2px, -2px)",
-                  }}
+                  style={{ clipPath: "inset(20% 0 40% 0)", transform: "translate(-2px, -2px)" }}
                   aria-hidden
                 >
-                  Hacemos realidad
-                  <br />
-                  tu proyecto digital
+                  Hacemos realidad<br />tu proyecto digital
                 </span>
                 <span
                   className="absolute inset-0 text-[#00D2FF] opacity-0 group-hover:opacity-30 transition-all duration-200 pointer-events-none"
-                  style={{
-                    clipPath: "inset(50% 0 10% 0)",
-                    transform: "translate(2px, 2px)",
-                  }}
+                  style={{ clipPath: "inset(50% 0 10% 0)", transform: "translate(2px, 2px)" }}
                   aria-hidden
                 >
-                  Hacemos realidad
-                  <br />
-                  tu proyecto digital
+                  Hacemos realidad<br />tu proyecto digital
                 </span>
               </motion.h1>
               <motion.p
@@ -350,7 +375,7 @@ export default function HomePage() {
                   className="group inline-flex h-12 items-center justify-center rounded-lg bg-[#00D2FF] px-6 text-sm font-medium text-black hover:bg-[#00D2FF]/90 transition-all shadow-[0_0_20px_#00D2FF]/20 hover:shadow-[0_0_30px_#00D2FF]/40"
                 >
                   Ver servicios
-                  <ChevronRight className="ml-1 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+                  <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
                 </a>
                 <a
                   href="mailto:toalesco@tutamail.com?subject=Quiero%20m%C3%A1s%20informaci%C3%B3n"
@@ -377,12 +402,8 @@ export default function HomePage() {
                   transition={{ duration: 0.4, delay: i * 0.1 }}
                   className="text-center"
                 >
-                  <div className="text-3xl md:text-4xl font-black text-[#EDEDED]">
-                    {stat.number}
-                  </div>
-                  <div className="mt-1 text-sm text-[#8A9AAB]">
-                    {stat.label}
-                  </div>
+                  <div className="text-3xl md:text-4xl font-black text-[#EDEDED]">{stat.number}</div>
+                  <div className="mt-1 text-sm text-[#8A9AAB]">{stat.label}</div>
                 </motion.div>
               ))}
             </div>
@@ -398,9 +419,7 @@ export default function HomePage() {
               viewport={{ once: true }}
               className="text-center mb-16"
             >
-              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-[#EDEDED]">
-                Nuestros servicios
-              </h2>
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-[#EDEDED]">Nuestros servicios</h2>
               <p className="mt-4 text-[#8A9AAB] max-w-2xl mx-auto text-lg">
                 Soluciones tecnológicas diseñadas para impulsar tu negocio
               </p>
@@ -410,6 +429,7 @@ export default function HomePage() {
               {services.map((service, i) => (
                 <motion.div
                   key={service.title}
+                  id={service.href.replace("#", "")}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -417,7 +437,8 @@ export default function HomePage() {
                   className="group relative overflow-hidden rounded-xl bg-[#111111] border border-white/[0.04] p-8 hover:border-[#00D2FF]/20 transition-all duration-500"
                 >
                   <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(0,210,255,0.01)_50%,transparent_75%)] bg-[length:250%_250%] group-hover:bg-[position:100%_100%] transition-all duration-700" />
-                  <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-[#00D2FF]/[0.02] blur-3xl group-hover:bg-[#00D2FF]/[0.04] transition-all duration-700" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#00D2FF]/[0.01] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-[#00D2FF]/[0.015] blur-3xl group-hover:bg-[#00D2FF]/[0.03] transition-all duration-700" />
                   <div className="relative">
                     <div className="flex items-center gap-3 mb-5">
                       <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-white/[0.03] border border-white/[0.06] group-hover:border-[#00D2FF]/20 transition-all">
@@ -427,12 +448,8 @@ export default function HomePage() {
                         {">"} {service.code}
                       </span>
                     </div>
-                    <h3 className="text-lg font-semibold text-[#EDEDED] mb-3">
-                      {service.title}
-                    </h3>
-                    <p className="text-sm text-[#8A9AAB] leading-relaxed mb-6">
-                      {service.description}
-                    </p>
+                    <h3 className="text-lg font-semibold text-[#EDEDED] mb-3">{service.title}</h3>
+                    <p className="text-sm text-[#8A9AAB] leading-relaxed mb-6">{service.description}</p>
                     <a
                       href={`mailto:toalesco@tutamail.com?subject=${service.mailSubject}`}
                       className="inline-flex items-center gap-1.5 text-sm font-medium text-[#00D2FF] hover:text-[#00D2FF]/80 transition-colors"
@@ -447,8 +464,8 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Club Platform Deep Dive */}
-        <section className="relative overflow-hidden py-32 bg-[#111111]">
+        {/* Club Platform */}
+        <section id="clubes" className="relative overflow-hidden py-32 bg-[#111111]">
           <div className="absolute inset-0 bg-gradient-to-r from-[#00D2FF]/[0.01] via-transparent to-transparent" />
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#00D2FF]/10 to-transparent" />
           <div className="container mx-auto px-4 relative">
@@ -461,8 +478,7 @@ export default function HomePage() {
               <div className="grid gap-16 lg:grid-cols-2 items-center">
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-1.5 text-sm text-[#8A9AAB] mb-6 font-mono tracking-wide">
-                    <span className="text-[#00E676] text-xs">$</span>
-                    {" "}producto_destacado --feature=clubes
+                    <span className="text-[#00E676] text-xs">$</span> producto_destacado --feature=clubes
                   </div>
                   <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-[#EDEDED] mb-6">
                     Plataforma SaaS para
@@ -473,10 +489,9 @@ export default function HomePage() {
                     </span>
                   </h2>
                   <p className="text-lg text-[#8A9AAB] leading-relaxed mb-8">
-                    Transformá la gestión de tu club con nuestra plataforma
-                    todo-en-uno. Cada club tiene su propio sitio web con diseño
-                    personalizado, dominio propio y todas las herramientas
-                    necesarias para crecer.
+                    Transformá la gestión de tu club con nuestra plataforma todo-en-uno.
+                    Cada club tiene su propio sitio web con diseño personalizado,
+                    dominio propio y todas las herramientas necesarias para crecer.
                   </p>
                   <div className="grid grid-cols-2 gap-3 mb-8">
                     {features.map((f, i) => (
@@ -526,9 +541,7 @@ export default function HomePage() {
                         >
                           <item.icon className="h-8 w-8 text-[#00D2FF] mx-auto mb-2" />
                           <p className="font-semibold text-sm text-[#EDEDED]">{item.label}</p>
-                          <p className="text-xs text-[#8A9AAB] mt-0.5">
-                            {item.desc}
-                          </p>
+                          <p className="text-xs text-[#8A9AAB] mt-0.5">{item.desc}</p>
                         </motion.div>
                       ))}
                     </div>
@@ -547,12 +560,8 @@ export default function HomePage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-2xl font-bold tracking-tight text-[#EDEDED] mb-3">
-                Equipo
-              </h2>
-              <p className="text-[#8A9AAB] text-sm mb-10 max-w-md mx-auto">
-                Los que hacemos posible TOALESCO
-              </p>
+              <h2 className="text-2xl font-bold tracking-tight text-[#EDEDED] mb-3">Equipo</h2>
+              <p className="text-[#8A9AAB] text-sm mb-10 max-w-md mx-auto">Los que hacemos posible TOALESCO</p>
               <div className="flex flex-wrap items-center justify-center gap-12">
                 {team.map((member, i) => (
                   <motion.div
@@ -585,12 +594,8 @@ export default function HomePage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-[#EDEDED] mb-4">
-                ¿Listo para empezar?
-              </h2>
-              <p className="text-[#8A9AAB] max-w-xl mx-auto mb-8 text-lg">
-                Cuéntanos tu idea y te ayudamos a hacerla realidad
-              </p>
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-[#EDEDED] mb-4">¿Listo para empezar?</h2>
+              <p className="text-[#8A9AAB] max-w-xl mx-auto mb-8 text-lg">Cuéntanos tu idea y te ayudamos a hacerla realidad</p>
               <a
                 href="mailto:toalesco@tutamail.com?subject=Quiero%20m%C3%A1s%20informaci%C3%B3n%20sobre%20TOALESCO"
                 className="group inline-flex h-12 items-center justify-center rounded-lg bg-[#00D2FF] px-8 text-sm font-medium text-black hover:bg-[#00D2FF]/90 transition-all shadow-[0_0_20px_#00D2FF]/20 hover:shadow-[0_0_30px_#00D2FF]/40"
@@ -605,21 +610,17 @@ export default function HomePage() {
 
       <footer className="border-t border-white/[0.04] py-12 bg-black">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-lg font-bold text-[#EDEDED] mb-2">
-            TOALESCO
-          </p>
-          <p className="text-sm text-[#8A9AAB] mb-1">
-            Soluciones tecnológicas para PyMEs — Chile
-          </p>
+          <p className="text-lg font-bold text-[#EDEDED] mb-2">TOALESCO</p>
+          <p className="text-sm text-[#8A9AAB] mb-1">Soluciones tecnológicas para PyMEs — Chile</p>
           <div className="flex items-center justify-center gap-4 text-xs text-[#8A9AAB]">
-            <a
-              href="mailto:toalesco@tutamail.com"
-              className="hover:text-[#00D2FF] transition-colors"
-            >
+            <a href="mailto:toalesco@tutamail.com" className="hover:text-[#00D2FF] transition-colors">
               toalesco@tutamail.com
             </a>
             <span className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#00E676] animate-pulse shadow-[0_0_6px_#00E676]" />
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00E676] opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00E676] shadow-[0_0_6px_#00E676]" />
+              </span>
               Soporte Operando 24/7
             </span>
           </div>
