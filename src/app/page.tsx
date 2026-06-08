@@ -204,10 +204,14 @@ export default function HomePage() {
   const [hoveredLink, setHoveredLink] = useState<string | null>(null);
 
   useEffect(() => {
+    document.documentElement.style.scrollBehavior = "smooth";
     const onScroll = () => setScrolled(window.scrollY > 40);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      document.documentElement.style.scrollBehavior = "";
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   return (
@@ -224,10 +228,10 @@ export default function HomePage() {
 
       {/* Navbar */}
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${
           scrolled
-            ? "bg-black/80 backdrop-blur-xl border-b border-white/[0.04]"
-            : "bg-transparent"
+            ? "bg-black/70 backdrop-blur-2xl border-b border-white/[0.04]"
+            : "bg-transparent border-transparent"
         }`}
       >
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -270,6 +274,21 @@ export default function HomePage() {
               </span>
               SYS_STATUS: OPERANDO 24/7
             </motion.div>
+
+            {/* Instagram */}
+            <a
+              href="https://instagram.com/toalesco"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden md:inline-flex items-center gap-1.5 text-xs font-mono text-[#8A9AAB] hover:text-[#EDEDED] transition-colors"
+            >
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+              </svg>
+              @toalesco
+            </a>
 
             {/* [ Iniciar_Sesión ] */}
             <a
@@ -615,6 +634,19 @@ export default function HomePage() {
           <div className="flex items-center justify-center gap-4 text-xs text-[#8A9AAB]">
             <a href="mailto:toalesco@tutamail.com" className="hover:text-[#00D2FF] transition-colors">
               toalesco@tutamail.com
+            </a>
+            <a
+              href="https://instagram.com/toalesco"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#00D2FF] transition-colors flex items-center gap-1.5"
+            >
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+              </svg>
+              @toalesco
             </a>
             <span className="flex items-center gap-1.5">
               <span className="relative flex h-2 w-2">
