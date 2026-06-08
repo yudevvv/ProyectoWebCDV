@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   Globe,
@@ -13,8 +13,6 @@ import {
   Wrench,
   Bot,
   ChevronRight,
-  Sparkles,
-  Activity,
 } from "lucide-react";
 
 const services = [
@@ -82,6 +80,125 @@ const stats = [
   { number: "24/7", label: "Soporte técnico" },
 ];
 
+function ParticleNetwork() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animationId: number;
+    let mouse = { x: -1000, y: -1000 };
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const dots: { x: number; y: number; vx: number; vy: number }[] = [];
+    const count = 60;
+    for (let i = 0; i < count; i++) {
+      dots.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+      });
+    }
+
+    const onMouse = (e: MouseEvent) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    };
+    window.addEventListener("mousemove", onMouse);
+    window.addEventListener("mouseleave", () => { mouse.x = -1000; mouse.y = -1000; });
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      dots.forEach((dot) => {
+        dot.x += dot.vx;
+        dot.y += dot.vy;
+        if (dot.x < 0 || dot.x > canvas.width) dot.vx *= -1;
+        if (dot.y < 0 || dot.y > canvas.height) dot.vy *= -1;
+        const dx = dot.x - mouse.x;
+        const dy = dot.y - mouse.y;
+        if (Math.abs(dx) < 200 && Math.abs(dy) < 200) {
+          dot.x += (dx > 0 ? 1 : -1) * 0.2;
+          dot.y += (dy > 0 ? 1 : -1) * 0.2;
+        }
+      });
+      for (let i = 0; i < dots.length; i++) {
+        for (let j = i + 1; j < dots.length; j++) {
+          const dx = dots[i].x - dots[j].x;
+          const dy = dots[i].y - dots[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.beginPath();
+            ctx.moveTo(dots[i].x, dots[i].y);
+            ctx.lineTo(dots[j].x, dots[j].y);
+            ctx.strokeStyle = `rgba(0, 210, 255, ${(1 - dist / 180) * 0.12})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+        ctx.beginPath();
+        ctx.arc(dots[i].x, dots[i].y, 1, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0, 210, 255, 0.3)";
+        ctx.fill();
+      }
+      animationId = requestAnimationFrame(draw);
+    };
+    draw();
+
+    return () => {
+      cancelAnimationFrame(animationId);
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("mousemove", onMouse);
+      window.removeEventListener("mouseleave", () => {});
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 pointer-events-none z-10"
+    />
+  );
+}
+
+function TypingStatus() {
+  const [text, setText] = useState("");
+  const fullText = "toalesco.services — status: online";
+  const [cursor, setCursor] = useState(true);
+
+  useEffect(() => {
+    let i = 0;
+    const interval = setInterval(() => {
+      i++;
+      setText(fullText.slice(0, i));
+      if (i >= fullText.length) clearInterval(interval);
+    }, 40);
+    const cursorInterval = setInterval(() => setCursor((c) => !c), 530);
+    return () => {
+      clearInterval(interval);
+      clearInterval(cursorInterval);
+    };
+  }, []);
+
+  return (
+    <span className="font-mono tracking-wide">
+      {text}
+      {cursor && text.length < fullText.length ? (
+        <span className="text-[#00D2FF]">_</span>
+      ) : null}
+    </span>
+  );
+}
+
 export default function HomePage() {
   const [scrolled, setScrolled] = useState(false);
 
@@ -94,6 +211,16 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
+      {/* Scanline overlay */}
+      <div
+        className="fixed inset-0 pointer-events-none z-[60] opacity-[0.015]"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,210,255,0.15) 1px, rgba(0,210,255,0.15) 2px)",
+          backgroundSize: "100% 2px",
+        }}
+      />
+
       {/* Navbar */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
@@ -103,17 +230,26 @@ export default function HomePage() {
         }`}
       >
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <span className="text-xl font-bold tracking-tight text-white">
+          <motion.span
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-xl font-bold tracking-tight text-white"
+          >
             TOALESCO
-          </span>
+          </motion.span>
           <div className="flex items-center gap-4">
-            <span className="hidden sm:flex items-center gap-1.5 text-xs text-[#8A9AAB]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#00E676] animate-pulse" />
+            <motion.span
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.8 }}
+              className="hidden sm:flex items-center gap-1.5 text-xs text-[#8A9AAB] font-mono"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-[#00E676] animate-pulse shadow-[0_0_6px_#00E676]" />
               Soporte 24/7
-            </span>
+            </motion.span>
             <a
               href="/login"
-              className="inline-flex h-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] px-4 text-sm font-medium text-[#EDEDED] hover:bg-white/[0.06] transition-colors"
+              className="inline-flex h-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] px-4 text-sm font-medium text-[#EDEDED] hover:bg-white/[0.06] hover:border-[#00D2FF]/30 transition-all"
             >
               Iniciar Sesión
             </a>
@@ -125,10 +261,20 @@ export default function HomePage() {
         {/* Hero */}
         <section className="relative overflow-hidden min-h-[90vh] flex items-center">
           <div className="absolute inset-0 bg-gradient-to-b from-[#00d2ff]/[0.02] via-transparent to-transparent" />
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-[#00d2ff]/[0.03] blur-[120px]" />
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:3rem_3rem]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-[#00d2ff]/[0.03] blur-[150px]" />
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#00D2FF]/20 to-transparent" />
+          <div
+            className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage:
+                "linear-gradient(0deg, transparent 24%, rgba(0,210,255,0.03) 25%, rgba(0,210,255,0.03) 26%, transparent 27%, transparent 74%, rgba(0,210,255,0.03) 75%, rgba(0,210,255,0.03) 76%, transparent 77%, transparent)",
+              backgroundSize: "100% 50px",
+              animation: "drift 20s linear infinite",
+            }}
+          />
+          <ParticleNetwork />
 
-          <div className="container mx-auto px-4 relative py-32">
+          <div className="container mx-auto px-4 relative z-20 py-32">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -139,20 +285,48 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
-                className="inline-flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.02] px-4 py-1.5 text-sm text-[#8A9AAB] mb-8 font-mono tracking-wide"
+                className="inline-flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.02] px-4 py-1.5 text-sm text-[#8A9AAB] mb-8"
               >
-                <Activity className="h-3.5 w-3.5 text-[#00E676]" />
-                toalesco.services — status: online
+                <span className="h-1.5 w-1.5 rounded-full bg-[#00E676] animate-pulse shadow-[0_0_6px_#00E676]" />
+                <TypingStatus />
               </motion.div>
               <motion.h1
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="text-5xl sm:text-7xl md:text-8xl font-bold tracking-tight leading-[0.9] text-[#EDEDED]"
+                className="relative text-5xl sm:text-7xl md:text-8xl font-bold tracking-tight leading-[0.9] text-[#EDEDED] group"
               >
-                Hacemos realidad
-                <br />
-                <span className="text-[#00D2FF]">
+                <span className="relative inline-block">
+                  Hacemos realidad
+                  <br />
+                  <span className="text-[#00D2FF] relative">
+                    tu proyecto digital
+                    <span className="absolute inset-0 bg-[#00D2FF]/5 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                  </span>
+                </span>
+                {/* Glitch layers */}
+                <span
+                  className="absolute inset-0 text-[#00D2FF] opacity-0 group-hover:opacity-30 transition-all duration-200 pointer-events-none"
+                  style={{
+                    clipPath: "inset(20% 0 40% 0)",
+                    transform: "translate(-2px, -2px)",
+                  }}
+                  aria-hidden
+                >
+                  Hacemos realidad
+                  <br />
+                  tu proyecto digital
+                </span>
+                <span
+                  className="absolute inset-0 text-[#00D2FF] opacity-0 group-hover:opacity-30 transition-all duration-200 pointer-events-none"
+                  style={{
+                    clipPath: "inset(50% 0 10% 0)",
+                    transform: "translate(2px, 2px)",
+                  }}
+                  aria-hidden
+                >
+                  Hacemos realidad
+                  <br />
                   tu proyecto digital
                 </span>
               </motion.h1>
@@ -173,14 +347,14 @@ export default function HomePage() {
               >
                 <a
                   href="#servicios"
-                  className="group inline-flex h-12 items-center justify-center rounded-lg bg-[#00D2FF] px-6 text-sm font-medium text-black hover:bg-[#00D2FF]/90 transition-all"
+                  className="group inline-flex h-12 items-center justify-center rounded-lg bg-[#00D2FF] px-6 text-sm font-medium text-black hover:bg-[#00D2FF]/90 transition-all shadow-[0_0_20px_#00D2FF]/20 hover:shadow-[0_0_30px_#00D2FF]/40"
                 >
                   Ver servicios
                   <ChevronRight className="ml-1 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
                 </a>
                 <a
                   href="mailto:toalesco@tutamail.com?subject=Quiero%20m%C3%A1s%20informaci%C3%B3n"
-                  className="inline-flex h-12 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] px-6 text-sm font-medium text-[#EDEDED] hover:bg-white/[0.06] transition-all"
+                  className="inline-flex h-12 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] px-6 text-sm font-medium text-[#EDEDED] hover:bg-white/[0.06] hover:border-[#00D2FF]/30 transition-all"
                 >
                   <Mail className="mr-2 h-4 w-4" />
                   Contáctanos
@@ -240,16 +414,17 @@ export default function HomePage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: i * 0.1 }}
-                  className="group relative overflow-hidden rounded-xl bg-[#111111] border border-white/[0.04] p-8 hover:border-[#00D2FF]/20 transition-all"
+                  className="group relative overflow-hidden rounded-xl bg-[#111111] border border-white/[0.04] p-8 hover:border-[#00D2FF]/20 transition-all duration-500"
                 >
-                  <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-[#00D2FF]/[0.02] blur-3xl" />
+                  <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(0,210,255,0.01)_50%,transparent_75%)] bg-[length:250%_250%] group-hover:bg-[position:100%_100%] transition-all duration-700" />
+                  <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-[#00D2FF]/[0.02] blur-3xl group-hover:bg-[#00D2FF]/[0.04] transition-all duration-700" />
                   <div className="relative">
                     <div className="flex items-center gap-3 mb-5">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-white/[0.03] border border-white/[0.06]">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-white/[0.03] border border-white/[0.06] group-hover:border-[#00D2FF]/20 transition-all">
                         <service.icon className="h-5 w-5 text-[#00D2FF]" />
                       </div>
                       <span className="text-xs text-[#8A9AAB] font-mono tracking-wide">
-                        {service.code}
+                        {">"} {service.code}
                       </span>
                     </div>
                     <h3 className="text-lg font-semibold text-[#EDEDED] mb-3">
@@ -275,6 +450,7 @@ export default function HomePage() {
         {/* Club Platform Deep Dive */}
         <section className="relative overflow-hidden py-32 bg-[#111111]">
           <div className="absolute inset-0 bg-gradient-to-r from-[#00D2FF]/[0.01] via-transparent to-transparent" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#00D2FF]/10 to-transparent" />
           <div className="container mx-auto px-4 relative">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -285,14 +461,15 @@ export default function HomePage() {
               <div className="grid gap-16 lg:grid-cols-2 items-center">
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-1.5 text-sm text-[#8A9AAB] mb-6 font-mono tracking-wide">
-                    <Trophy className="h-3.5 w-3.5 text-[#00D2FF]" />
-                    producto_destacado
+                    <span className="text-[#00E676] text-xs">$</span>
+                    {" "}producto_destacado --feature=clubes
                   </div>
                   <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-[#EDEDED] mb-6">
                     Plataforma SaaS para
                     <br />
-                    <span className="text-[#00D2FF]">
+                    <span className="text-[#00D2FF] relative">
                       Clubes Deportivos
+                      <span className="absolute -bottom-1 left-0 right-0 h-px bg-gradient-to-r from-[#00D2FF]/50 to-transparent" />
                     </span>
                   </h2>
                   <p className="text-lg text-[#8A9AAB] leading-relaxed mb-8">
@@ -318,10 +495,10 @@ export default function HomePage() {
                   </div>
                   <a
                     href="mailto:toalesco@tutamail.com?subject=Quiero%20la%20plataforma%20para%20mi%20club%20deportivo"
-                    className="inline-flex h-12 items-center justify-center rounded-lg bg-[#00D2FF] px-6 text-sm font-medium text-black hover:bg-[#00D2FF]/90 transition-all"
+                    className="group inline-flex h-12 items-center justify-center rounded-lg bg-[#00D2FF] px-6 text-sm font-medium text-black hover:bg-[#00D2FF]/90 transition-all shadow-[0_0_20px_#00D2FF]/20 hover:shadow-[0_0_30px_#00D2FF]/40"
                   >
                     Quiero esto para mi club
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
                   </a>
                 </div>
                 <div className="relative">
@@ -345,7 +522,7 @@ export default function HomePage() {
                           whileInView={{ opacity: 1, y: 0 }}
                           viewport={{ once: true }}
                           transition={{ duration: 0.4, delay: 0.2 + i * 0.1 }}
-                          className="rounded-lg border border-white/[0.04] bg-[#111111] p-5 text-center hover:border-[#00D2FF]/10 transition-all"
+                          className="rounded-lg border border-white/[0.04] bg-[#111111] p-5 text-center hover:border-[#00D2FF]/10 hover:bg-[#00D2FF]/[0.01] transition-all"
                         >
                           <item.icon className="h-8 w-8 text-[#00D2FF] mx-auto mb-2" />
                           <p className="font-semibold text-sm text-[#EDEDED]">{item.label}</p>
@@ -384,9 +561,9 @@ export default function HomePage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.4, delay: i * 0.1 }}
-                    className="flex flex-col items-center"
+                    className="flex flex-col items-center group"
                   >
-                    <div className="h-16 w-16 rounded-full bg-[#111111] border border-white/[0.06] flex items-center justify-center text-lg font-bold text-[#00D2FF] mb-3">
+                    <div className="h-16 w-16 rounded-full bg-[#111111] border border-white/[0.06] flex items-center justify-center text-lg font-bold text-[#00D2FF] mb-3 group-hover:border-[#00D2FF]/20 group-hover:shadow-[0_0_15px_#00D2FF]/10 transition-all">
                       {member.initials}
                     </div>
                     <p className="text-sm font-semibold text-[#EDEDED]">{member.name}</p>
@@ -400,7 +577,8 @@ export default function HomePage() {
 
         {/* CTA */}
         <section className="relative overflow-hidden py-32 bg-[#111111]">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] rounded-full bg-[#00D2FF]/[0.03] blur-[100px]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-[#00D2FF]/[0.03] blur-[150px]" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#00D2FF]/10 to-transparent" />
           <div className="container mx-auto px-4 text-center relative">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -415,7 +593,7 @@ export default function HomePage() {
               </p>
               <a
                 href="mailto:toalesco@tutamail.com?subject=Quiero%20m%C3%A1s%20informaci%C3%B3n%20sobre%20TOALESCO"
-                className="inline-flex h-12 items-center justify-center rounded-lg bg-[#00D2FF] px-8 text-sm font-medium text-black hover:bg-[#00D2FF]/90 transition-all"
+                className="group inline-flex h-12 items-center justify-center rounded-lg bg-[#00D2FF] px-8 text-sm font-medium text-black hover:bg-[#00D2FF]/90 transition-all shadow-[0_0_20px_#00D2FF]/20 hover:shadow-[0_0_30px_#00D2FF]/40"
               >
                 <Mail className="mr-2 h-4 w-4" />
                 Escríbenos
@@ -441,7 +619,7 @@ export default function HomePage() {
               toalesco@tutamail.com
             </a>
             <span className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#00E676] animate-pulse" />
+              <span className="h-1.5 w-1.5 rounded-full bg-[#00E676] animate-pulse shadow-[0_0_6px_#00E676]" />
               Soporte Operando 24/7
             </span>
           </div>
