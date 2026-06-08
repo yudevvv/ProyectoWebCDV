@@ -110,7 +110,7 @@ function ParticleNetwork() {
     window.addEventListener("resize", resize);
 
     const dots: { x: number; y: number; vx: number; vy: number }[] = [];
-    const count = 60;
+    const count = 35;
     for (let i = 0; i < count; i++) {
       dots.push({
         x: Math.random() * canvas.width,
@@ -124,7 +124,13 @@ function ParticleNetwork() {
     window.addEventListener("mousemove", onMouse);
     window.addEventListener("mouseleave", () => { mouse.x = -1000; mouse.y = -1000; });
 
-    const draw = () => {
+    let lastTime = 0;
+    const draw = (time: number) => {
+      if (time - lastTime < 30) {
+        animationId = requestAnimationFrame(draw);
+        return;
+      }
+      lastTime = time;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       dots.forEach((dot) => {
         dot.x += dot.vx;
@@ -159,7 +165,7 @@ function ParticleNetwork() {
       }
       animationId = requestAnimationFrame(draw);
     };
-    draw();
+    animationId = requestAnimationFrame(draw);
 
     return () => {
       cancelAnimationFrame(animationId);
@@ -205,14 +211,10 @@ export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    document.documentElement.style.scrollBehavior = "smooth";
     const onScroll = () => setScrolled(window.scrollY > 40);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      document.documentElement.style.scrollBehavior = "";
-      window.removeEventListener("scroll", onScroll);
-    };
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   return (
@@ -362,12 +364,11 @@ export default function HomePage() {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-[#00d2ff]/[0.03] blur-[150px]" />
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#00D2FF]/20 to-transparent" />
           <div
-            className="absolute inset-0 opacity-[0.025]"
+            className="absolute inset-0 opacity-[0.02]"
             style={{
               backgroundImage:
                 "linear-gradient(0deg, transparent 24%, rgba(0,210,255,0.03) 25%, rgba(0,210,255,0.03) 26%, transparent 27%, transparent 74%, rgba(0,210,255,0.03) 75%, rgba(0,210,255,0.03) 76%, transparent 77%, transparent)",
               backgroundSize: "100% 50px",
-              animation: "drift 20s linear infinite",
             }}
           />
           <ParticleNetwork />
