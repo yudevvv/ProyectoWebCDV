@@ -14,6 +14,7 @@ import {
   Bot,
   ChevronRight,
   Sparkles,
+  Activity,
 } from "lucide-react";
 
 const services = [
@@ -22,9 +23,7 @@ const services = [
     title: "Páginas Web para PyMEs",
     description:
       "Creamos sitios web modernos para pequeños y medianos negocios. Desde landing pages hasta plataformas completas con diseño único.",
-    color: "from-rose-500 to-pink-600",
-    lightBg: "bg-rose-50",
-    borderBg: "border-rose-200",
+    code: "import { Site } from 'toalesco'",
     mailSubject: "Quiero%20una%20p%C3%A1gina%20web%20para%20mi%20negocio",
     cta: "Cotiza tu página web",
   },
@@ -32,10 +31,8 @@ const services = [
     icon: Bot,
     title: "Automatización de Procesos",
     description:
-      "Automatizamos tareas repetitivas: facturación, inventarios, reportes y mailing. Menos trabajo manual, más eficiencia para tu negocio.",
-    color: "from-blue-500 to-blue-600",
-    lightBg: "bg-blue-50",
-    borderBg: "border-blue-200",
+      "Automatizamos tareas repetitivas: facturación, inventarios, reportes y mailing. Menos trabajo manual, más eficiencia.",
+    code: "pipeline = workflow.auto()",
     mailSubject: "Quiero%20automatizar%20procesos%20de%20mi%20negocio",
     cta: "Cotiza tu automatización",
   },
@@ -44,9 +41,7 @@ const services = [
     title: "Soporte Técnico y Reparación",
     description:
       "Mantenimiento y reparación de equipos computacionales. Servicio presencial y remoto con respuesta rápida y solución garantizada.",
-    color: "from-rose-400 to-rose-600",
-    lightBg: "bg-rose-50",
-    borderBg: "border-rose-200",
+    code: "status: online · ping 12ms",
     mailSubject: "Necesito%20soporte%20t%C3%A9cnico%20o%20reparaci%C3%B3n",
     cta: "Agenda una revisión",
   },
@@ -54,10 +49,8 @@ const services = [
     icon: Trophy,
     title: "Plataforma para Clubes",
     description:
-      "SaaS completo para la gestión digital de clubes deportivos: estadísticas, tienda online, socios, votación MVP y más. Cada club con su propio sitio.",
-    color: "from-blue-500 to-blue-600",
-    lightBg: "bg-blue-50",
-    borderBg: "border-blue-200",
+      "SaaS completo para la gestión digital de clubes deportivos: estadísticas, tienda online, socios, votación MVP y más.",
+    code: "<Club theme='custom' />",
     mailSubject: "Quiero%20la%20plataforma%20para%20mi%20club%20deportivo",
     cta: "Quiero esto para mi club",
   },
@@ -89,13 +82,6 @@ const stats = [
   { number: "24/7", label: "Soporte técnico" },
 ];
 
-const fadeUp = {
-  initial: { opacity: 0, y: 30 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: "-80px" },
-  transition: { duration: 0.6 },
-};
-
 export default function HomePage() {
   const [scrolled, setScrolled] = useState(false);
 
@@ -107,42 +93,40 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col min-h-screen bg-background">
       {/* Navbar */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           scrolled
-            ? "bg-white/70 backdrop-blur-xl border-b border-rose-100/50 shadow-sm"
-            : "bg-transparent border-transparent"
+            ? "bg-black/80 backdrop-blur-xl border-b border-white/[0.04]"
+            : "bg-transparent"
         }`}
       >
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <span className="text-xl font-bold tracking-tight">
-            <span className="bg-gradient-to-r from-rose-500 to-blue-500 bg-clip-text text-transparent">
-              TOALESCO
-            </span>
+          <span className="text-xl font-bold tracking-tight text-white">
+            TOALESCO
           </span>
-          <a
-            href="/login"
-            className={`inline-flex h-9 items-center justify-center rounded-lg px-4 text-sm font-medium transition-all ${
-              scrolled
-                ? "bg-rose-500 text-white hover:bg-rose-600 shadow-sm"
-                : "bg-white/80 text-rose-600 hover:bg-white border border-rose-200"
-            }`}
-          >
-            Iniciar Sesión
-          </a>
+          <div className="flex items-center gap-4">
+            <span className="hidden sm:flex items-center gap-1.5 text-xs text-[#8A9AAB]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#00E676] animate-pulse" />
+              Soporte 24/7
+            </span>
+            <a
+              href="/login"
+              className="inline-flex h-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] px-4 text-sm font-medium text-[#EDEDED] hover:bg-white/[0.06] transition-colors"
+            >
+              Iniciar Sesión
+            </a>
+          </div>
         </div>
       </header>
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="relative overflow-hidden min-h-[85vh] flex items-center">
-          <div className="absolute inset-0 bg-gradient-to-br from-rose-50/40 via-white to-blue-50/40" />
-          <div className="absolute top-20 -left-32 w-96 h-96 rounded-full bg-rose-200/20 blur-[120px]" />
-          <div className="absolute bottom-20 -right-32 w-96 h-96 rounded-full bg-blue-200/20 blur-[120px]" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-rose-100/10 to-blue-100/10 blur-[100px]" />
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-30" />
+        <section className="relative overflow-hidden min-h-[90vh] flex items-center">
+          <div className="absolute inset-0 bg-gradient-to-b from-[#00d2ff]/[0.02] via-transparent to-transparent" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-[#00d2ff]/[0.03] blur-[120px]" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:3rem_3rem]" />
 
           <div className="container mx-auto px-4 relative py-32">
             <motion.div
@@ -155,20 +139,20 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
-                className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-4 py-1.5 text-sm text-rose-600 mb-8"
+                className="inline-flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.02] px-4 py-1.5 text-sm text-[#8A9AAB] mb-8 font-mono tracking-wide"
               >
-                <Sparkles className="h-3.5 w-3.5" />
-                Soluciones digitales para PyMEs
+                <Activity className="h-3.5 w-3.5 text-[#00E676]" />
+                toalesco.services — status: online
               </motion.div>
               <motion.h1
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="text-5xl sm:text-7xl md:text-8xl font-bold tracking-tight leading-[0.9] text-gray-900"
+                className="text-5xl sm:text-7xl md:text-8xl font-bold tracking-tight leading-[0.9] text-[#EDEDED]"
               >
                 Hacemos realidad
                 <br />
-                <span className="bg-gradient-to-r from-rose-500 via-rose-400 to-blue-500 bg-clip-text text-transparent">
+                <span className="text-[#00D2FF]">
                   tu proyecto digital
                 </span>
               </motion.h1>
@@ -176,7 +160,7 @@ export default function HomePage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
-                className="mx-auto mt-6 max-w-2xl text-lg text-gray-500"
+                className="mx-auto mt-6 max-w-2xl text-lg text-[#8A9AAB]"
               >
                 Creamos páginas web, automatizamos procesos, reparamos equipos
                 y desarrollamos plataformas SaaS para clubes deportivos.
@@ -189,14 +173,14 @@ export default function HomePage() {
               >
                 <a
                   href="#servicios"
-                  className="group inline-flex h-12 items-center justify-center rounded-xl bg-rose-500 px-6 text-sm font-medium text-white hover:bg-rose-600 transition-all shadow-lg shadow-rose-200/50 hover:shadow-rose-300/50"
+                  className="group inline-flex h-12 items-center justify-center rounded-lg bg-[#00D2FF] px-6 text-sm font-medium text-black hover:bg-[#00D2FF]/90 transition-all"
                 >
                   Ver servicios
                   <ChevronRight className="ml-1 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
                 </a>
                 <a
                   href="mailto:toalesco@tutamail.com?subject=Quiero%20m%C3%A1s%20informaci%C3%B3n"
-                  className="inline-flex h-12 items-center justify-center rounded-xl border border-gray-200 bg-white px-6 text-sm font-medium text-gray-700 hover:border-rose-200 hover:text-rose-600 transition-all shadow-sm"
+                  className="inline-flex h-12 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] px-6 text-sm font-medium text-[#EDEDED] hover:bg-white/[0.06] transition-all"
                 >
                   <Mail className="mr-2 h-4 w-4" />
                   Contáctanos
@@ -207,7 +191,7 @@ export default function HomePage() {
         </section>
 
         {/* Stats */}
-        <section className="border-y border-rose-100/50 bg-rose-50/30 py-14">
+        <section className="border-y border-white/[0.04] bg-[#111111] py-14">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {stats.map((stat, i) => (
@@ -219,10 +203,10 @@ export default function HomePage() {
                   transition={{ duration: 0.4, delay: i * 0.1 }}
                   className="text-center"
                 >
-                  <div className="text-3xl md:text-4xl font-black bg-gradient-to-br from-rose-500 to-blue-500 bg-clip-text text-transparent">
+                  <div className="text-3xl md:text-4xl font-black text-[#EDEDED]">
                     {stat.number}
                   </div>
-                  <div className="mt-1 text-sm text-gray-500">
+                  <div className="mt-1 text-sm text-[#8A9AAB]">
                     {stat.label}
                   </div>
                 </motion.div>
@@ -232,7 +216,7 @@ export default function HomePage() {
         </section>
 
         {/* Services */}
-        <section id="servicios" className="py-32">
+        <section id="servicios" className="py-32 bg-black">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -240,15 +224,15 @@ export default function HomePage() {
               viewport={{ once: true }}
               className="text-center mb-16"
             >
-              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900">
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-[#EDEDED]">
                 Nuestros servicios
               </h2>
-              <p className="mt-4 text-gray-500 max-w-2xl mx-auto text-lg">
+              <p className="mt-4 text-[#8A9AAB] max-w-2xl mx-auto text-lg">
                 Soluciones tecnológicas diseñadas para impulsar tu negocio
               </p>
             </motion.div>
 
-            <div className="grid gap-6 md:grid-cols-2 max-w-5xl mx-auto">
+            <div className="grid gap-5 md:grid-cols-2 max-w-5xl mx-auto">
               {services.map((service, i) => (
                 <motion.div
                   key={service.title}
@@ -256,26 +240,27 @@ export default function HomePage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: i * 0.1 }}
-                  className={`group relative overflow-hidden rounded-2xl border ${service.borderBg} ${service.lightBg} p-8 hover:shadow-lg transition-all`}
+                  className="group relative overflow-hidden rounded-xl bg-[#111111] border border-white/[0.04] p-8 hover:border-[#00D2FF]/20 transition-all"
                 >
-                  <div
-                    className={`absolute top-0 right-0 w-40 h-40 rounded-full bg-gradient-to-br ${service.color} opacity-[0.03] blur-3xl group-hover:opacity-[0.06] transition-opacity`}
-                  />
+                  <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-[#00D2FF]/[0.02] blur-3xl" />
                   <div className="relative">
-                    <div
-                      className={`inline-flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br ${service.color} mb-5 shadow-sm`}
-                    >
-                      <service.icon className="h-7 w-7 text-white" />
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-white/[0.03] border border-white/[0.06]">
+                        <service.icon className="h-5 w-5 text-[#00D2FF]" />
+                      </div>
+                      <span className="text-xs text-[#8A9AAB] font-mono tracking-wide">
+                        {service.code}
+                      </span>
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-3">
+                    <h3 className="text-lg font-semibold text-[#EDEDED] mb-3">
                       {service.title}
                     </h3>
-                    <p className="text-gray-500 leading-relaxed mb-6">
+                    <p className="text-sm text-[#8A9AAB] leading-relaxed mb-6">
                       {service.description}
                     </p>
                     <a
                       href={`mailto:toalesco@tutamail.com?subject=${service.mailSubject}`}
-                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-rose-500 hover:text-rose-600 underline-offset-4"
+                      className="inline-flex items-center gap-1.5 text-sm font-medium text-[#00D2FF] hover:text-[#00D2FF]/80 transition-colors"
                     >
                       {service.cta}
                       <ArrowRight className="h-3.5 w-3.5" />
@@ -288,8 +273,8 @@ export default function HomePage() {
         </section>
 
         {/* Club Platform Deep Dive */}
-        <section className="relative overflow-hidden py-32 bg-blue-50/20">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-100/20 via-transparent to-transparent" />
+        <section className="relative overflow-hidden py-32 bg-[#111111]">
+          <div className="absolute inset-0 bg-gradient-to-r from-[#00D2FF]/[0.01] via-transparent to-transparent" />
           <div className="container mx-auto px-4 relative">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -299,18 +284,18 @@ export default function HomePage() {
             >
               <div className="grid gap-16 lg:grid-cols-2 items-center">
                 <div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-1.5 text-sm text-blue-600 mb-6">
-                    <Trophy className="h-3.5 w-3.5" />
-                    Producto destacado
+                  <div className="inline-flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-1.5 text-sm text-[#8A9AAB] mb-6 font-mono tracking-wide">
+                    <Trophy className="h-3.5 w-3.5 text-[#00D2FF]" />
+                    producto_destacado
                   </div>
-                  <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 mb-6">
+                  <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-[#EDEDED] mb-6">
                     Plataforma SaaS para
                     <br />
-                    <span className="bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text text-transparent">
+                    <span className="text-[#00D2FF]">
                       Clubes Deportivos
                     </span>
                   </h2>
-                  <p className="text-lg text-gray-500 leading-relaxed mb-8">
+                  <p className="text-lg text-[#8A9AAB] leading-relaxed mb-8">
                     Transformá la gestión de tu club con nuestra plataforma
                     todo-en-uno. Cada club tiene su propio sitio web con diseño
                     personalizado, dominio propio y todas las herramientas
@@ -324,30 +309,28 @@ export default function HomePage() {
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.3, delay: i * 0.03 }}
-                        className="flex items-center gap-2.5 text-sm text-gray-600"
+                        className="flex items-center gap-2.5 text-sm text-[#8A9AAB]"
                       >
-                        <div className="h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                          <CheckCircle2 className="h-3 w-3 text-blue-500" />
-                        </div>
+                        <CheckCircle2 className="h-4 w-4 text-[#00D2FF] shrink-0" />
                         <span>{f}</span>
                       </motion.div>
                     ))}
                   </div>
                   <a
                     href="mailto:toalesco@tutamail.com?subject=Quiero%20la%20plataforma%20para%20mi%20club%20deportivo"
-                    className="inline-flex h-12 items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 px-6 text-sm font-medium text-white hover:shadow-lg hover:shadow-blue-200/50 transition-all shadow-md"
+                    className="inline-flex h-12 items-center justify-center rounded-lg bg-[#00D2FF] px-6 text-sm font-medium text-black hover:bg-[#00D2FF]/90 transition-all"
                   >
                     Quiero esto para mi club
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </a>
                 </div>
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-200/30 via-transparent to-rose-200/30 rounded-3xl blur-3xl" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#00D2FF]/[0.03] via-transparent to-transparent rounded-2xl blur-3xl" />
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
-                    className="relative rounded-2xl border border-blue-100 bg-white p-8 shadow-sm"
+                    className="relative rounded-xl border border-white/[0.04] bg-black p-8"
                   >
                     <div className="grid grid-cols-2 gap-4">
                       {[
@@ -362,11 +345,11 @@ export default function HomePage() {
                           whileInView={{ opacity: 1, y: 0 }}
                           viewport={{ once: true }}
                           transition={{ duration: 0.4, delay: 0.2 + i * 0.1 }}
-                          className="rounded-xl border border-gray-100 bg-gray-50/50 p-5 text-center hover:border-blue-100 hover:bg-blue-50/50 transition-all"
+                          className="rounded-lg border border-white/[0.04] bg-[#111111] p-5 text-center hover:border-[#00D2FF]/10 transition-all"
                         >
-                          <item.icon className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-                          <p className="font-semibold text-sm text-gray-900">{item.label}</p>
-                          <p className="text-xs text-gray-400 mt-0.5">
+                          <item.icon className="h-8 w-8 text-[#00D2FF] mx-auto mb-2" />
+                          <p className="font-semibold text-sm text-[#EDEDED]">{item.label}</p>
+                          <p className="text-xs text-[#8A9AAB] mt-0.5">
                             {item.desc}
                           </p>
                         </motion.div>
@@ -380,69 +363,88 @@ export default function HomePage() {
         </section>
 
         {/* Team */}
-        <motion.section {...fadeUp} className="py-20">
+        <section className="py-20 bg-black">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-3">
-              Equipo
-            </h2>
-            <p className="text-gray-500 text-sm mb-10 max-w-md mx-auto">
-              Los que hacemos posible TOALESCO
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-10">
-              {team.map((member, i) => (
-                <motion.div
-                  key={member.name}
-                  initial={{ opacity: 0, y: 15 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: i * 0.1 }}
-                  className="flex flex-col items-center"
-                >
-                  <div className="h-16 w-16 rounded-full bg-gradient-to-br from-rose-100 via-white to-blue-100 flex items-center justify-center text-lg font-bold text-rose-500 mb-3 border border-rose-200">
-                    {member.initials}
-                  </div>
-                  <p className="text-sm font-semibold text-gray-900">{member.name}</p>
-                  <p className="text-xs text-gray-500">{member.role}</p>
-                </motion.div>
-              ))}
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-2xl font-bold tracking-tight text-[#EDEDED] mb-3">
+                Equipo
+              </h2>
+              <p className="text-[#8A9AAB] text-sm mb-10 max-w-md mx-auto">
+                Los que hacemos posible TOALESCO
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-12">
+                {team.map((member, i) => (
+                  <motion.div
+                    key={member.name}
+                    initial={{ opacity: 0, y: 15 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: i * 0.1 }}
+                    className="flex flex-col items-center"
+                  >
+                    <div className="h-16 w-16 rounded-full bg-[#111111] border border-white/[0.06] flex items-center justify-center text-lg font-bold text-[#00D2FF] mb-3">
+                      {member.initials}
+                    </div>
+                    <p className="text-sm font-semibold text-[#EDEDED]">{member.name}</p>
+                    <p className="text-xs text-[#8A9AAB]">{member.role}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
           </div>
-        </motion.section>
+        </section>
 
         {/* CTA */}
-        <motion.section {...fadeUp} className="relative overflow-hidden py-32 bg-gradient-to-br from-rose-50/50 via-white to-blue-50/50">
+        <section className="relative overflow-hidden py-32 bg-[#111111]">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] rounded-full bg-[#00D2FF]/[0.03] blur-[100px]" />
           <div className="container mx-auto px-4 text-center relative">
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 mb-4">
-              ¿Listo para empezar?
-            </h2>
-            <p className="text-gray-500 max-w-xl mx-auto mb-8 text-lg">
-              Cuéntanos tu idea y te ayudamos a hacerla realidad
-            </p>
-            <a
-              href="mailto:toalesco@tutamail.com?subject=Quiero%20m%C3%A1s%20informaci%C3%B3n%20sobre%20TOALESCO"
-              className="inline-flex h-12 items-center justify-center rounded-xl bg-rose-500 px-8 text-sm font-medium text-white hover:bg-rose-600 transition-all shadow-lg shadow-rose-200/50 hover:shadow-rose-300/50"
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
             >
-              <Mail className="mr-2 h-4 w-4" />
-              Escríbenos
-            </a>
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-[#EDEDED] mb-4">
+                ¿Listo para empezar?
+              </h2>
+              <p className="text-[#8A9AAB] max-w-xl mx-auto mb-8 text-lg">
+                Cuéntanos tu idea y te ayudamos a hacerla realidad
+              </p>
+              <a
+                href="mailto:toalesco@tutamail.com?subject=Quiero%20m%C3%A1s%20informaci%C3%B3n%20sobre%20TOALESCO"
+                className="inline-flex h-12 items-center justify-center rounded-lg bg-[#00D2FF] px-8 text-sm font-medium text-black hover:bg-[#00D2FF]/90 transition-all"
+              >
+                <Mail className="mr-2 h-4 w-4" />
+                Escríbenos
+              </a>
+            </motion.div>
           </div>
-        </motion.section>
+        </section>
       </main>
 
-      <footer className="border-t border-gray-100 py-12 bg-white">
+      <footer className="border-t border-white/[0.04] py-12 bg-black">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-lg font-bold bg-gradient-to-r from-rose-500 to-blue-500 bg-clip-text text-transparent mb-2">
+          <p className="text-lg font-bold text-[#EDEDED] mb-2">
             TOALESCO
           </p>
-          <p className="text-sm text-gray-500 mb-1">
+          <p className="text-sm text-[#8A9AAB] mb-1">
             Soluciones tecnológicas para PyMEs — Chile
           </p>
-          <a
-            href="mailto:toalesco@tutamail.com"
-            className="text-xs text-gray-400 hover:text-rose-500 transition-colors"
-          >
-            toalesco@tutamail.com
-          </a>
+          <div className="flex items-center justify-center gap-4 text-xs text-[#8A9AAB]">
+            <a
+              href="mailto:toalesco@tutamail.com"
+              className="hover:text-[#00D2FF] transition-colors"
+            >
+              toalesco@tutamail.com
+            </a>
+            <span className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#00E676] animate-pulse" />
+              Soporte Operando 24/7
+            </span>
+          </div>
         </div>
       </footer>
     </div>
