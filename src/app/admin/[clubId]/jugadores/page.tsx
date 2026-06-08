@@ -1,0 +1,147 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { AdminNav } from "@/components/admin/AdminNav";
+import { DataTable } from "@/components/admin/DataTable";
+import { PlayerDialog, type PlayerFormData } from "@/components/admin/PlayerDialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { createPlayer, updatePlayer, deletePlayer } from "@/lib/firebase/admin-fns";
+import { getActivePlayers } from "@/lib/firebase/firestore";
+import type { Player } from "@/types";
+import { toast } from "sonner";
+
+type AdminJugadoresPageProps = {
+  params: Promise<{ clubId: string }>;
+};
+
+export default function AdminJugadoresPage({
+  params,
+}: AdminJugadoresPageProps) {
+  const [clubId, setClubId] = useState<string | null>(null);
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
+
+  useEffect(() => {
+    params.then((p) => {
+      setClubId(p.clubId);
+      loadPlayers(p.clubId);
+    });
+  }, [params]);
+
+  const loadPlayers = async (id: string) => {
+    const data = await getActivePlayers(id);
+    setPlayers(data);
+  };
+
+  const handleCreate = async (data: PlayerFormData) => {
+    if (!clubId) return;
+    await createPlayer(clubId, data);
+    await loadPlayers(clubId);
+  };
+
+  const handleUpdate = async (data: PlayerFormData) => {
+    if (!editingPlayer) return;
+    await updatePlayer(editingPlayer.id, data);
+    await loadPlayers(clubId!);
+    setEditingPlayer(null);
+  };
+
+  const handleDelete = async (player: Player) => {
+    if (!confirm("¿Eliminar jugador?")) return;
+    await deletePlayer(player.id);
+    toast.success("Jugador eliminado");
+    await loadPlayers(clubId!);
+  };
+
+  const columns = [
+    {
+      key: "number",
+      header: "#",
+      render: (p: Player) => <span className="font-bold">#{p.number}</span>,
+    },
+    {
+      key: "name",
+      header: "Nombre",
+      render: (p: Player) => `${p.firstName} ${p.lastName}`,
+    },
+    {
+      key: "position",
+      header: "Posición",
+      render: (p: Player) => p.position,
+    },
+    {
+      key: "age",
+      header: "Edad",
+      render: (p: Player) => p.age,
+    },
+    {
+      key: "height",
+      header: "Altura",
+      render: (p: Player) => p.height || "—",
+    },
+    {
+      key: "status",
+      header: "Estado",
+      render: (p: Player) => (
+        <Badge variant={p.active ? "default" : "secondary"}>
+          {p.active ? "Activo" : "Inactivo"}
+        </Badge>
+      ),
+    },
+  ];
+
+  if (!clubId) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <AdminNav clubId="" />
+        <div className="container mx-auto px-4 py-12">
+          <p className="text-muted-foreground">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <AdminNav clubId={clubId} />
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold">Jugadores</h1>
+          <Button onClick={() => { setEditingPlayer(null); setDialogOpen(true); }}>
+            + Agregar Jugador
+          </Button>
+        </div>
+
+        <DataTable
+          columns={columns}
+          data={players}
+          keyExtractor={(p) => p.id}
+          onEdit={(p) => {
+            setEditingPlayer(p);
+            setDialogOpen(true);
+          }}
+          onDelete={handleDelete}
+        />
+
+        <PlayerDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          onSubmit={editingPlayer ? handleUpdate : handleCreate}
+          defaultValues={editingPlayer ? {
+            firstName: editingPlayer.firstName,
+            lastName: editingPlayer.lastName,
+            number: editingPlayer.number,
+            position: editingPlayer.position,
+            age: editingPlayer.age,
+            height: editingPlayer.height,
+            weight: editingPlayer.weight,
+            bio: editingPlayer.bio,
+          } : undefined}
+          title={editingPlayer ? "Editar Jugador" : "Nuevo Jugador"}
+        />
+      </div>
+    </div>
+  );
+}
