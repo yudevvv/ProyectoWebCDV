@@ -84,10 +84,10 @@ const stats = [
 ];
 
 const navLinks = [
-  { label: "paginas-web", href: "#web" },
-  { label: "automatizaciones", href: "#automation" },
-  { label: "soporte", href: "#soporte" },
-  { label: "saas-clubes", href: "#clubes" },
+  { label: "paginas-web", href: "#web", section: "web" },
+  { label: "automatizaciones", href: "#automation", section: "automation" },
+  { label: "soporte", href: "#soporte", section: "soporte" },
+  { label: "saas-clubes", href: "#clubes", section: "clubes" },
 ];
 
 function ParticleNetwork() {
@@ -202,6 +202,7 @@ function TypingStatus() {
 export default function HomePage() {
   const [scrolled, setScrolled] = useState(false);
   const [hoveredLink, setHoveredLink] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.style.scrollBehavior = "smooth";
@@ -229,7 +230,7 @@ export default function HomePage() {
       {/* Navbar */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${
-          scrolled
+          scrolled || menuOpen
             ? "bg-black/70 backdrop-blur-2xl border-b border-white/[0.04]"
             : "bg-transparent border-transparent"
         }`}
@@ -246,6 +247,7 @@ export default function HomePage() {
               <a
                 key={link.label}
                 href={link.href}
+                onClick={() => setMenuOpen(false)}
                 onMouseEnter={() => setHoveredLink(link.label)}
                 onMouseLeave={() => setHoveredLink(null)}
                 className="relative px-3 py-1.5 text-xs font-mono text-[#8A9AAB] hover:text-[#00D2FF] transition-colors"
@@ -259,14 +261,14 @@ export default function HomePage() {
             ))}
           </nav>
 
-          {/* Right side */}
-          <div className="flex items-center gap-4">
+          {/* Desktop right side */}
+          <div className="hidden md:flex items-center gap-4">
             {/* Uptime indicator */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.8 }}
-              className="hidden lg:flex items-center gap-2 text-[10px] font-mono text-[#8A9AAB] tracking-wider uppercase"
+              className="flex items-center gap-2 text-[10px] font-mono text-[#8A9AAB] tracking-wider uppercase"
             >
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00E676] opacity-75" />
@@ -275,25 +277,10 @@ export default function HomePage() {
               SYS_STATUS: OPERANDO 24/7
             </motion.div>
 
-            {/* Instagram */}
-            <a
-              href="https://instagram.com/toalesco"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden md:inline-flex items-center gap-1.5 text-xs font-mono text-[#8A9AAB] hover:text-[#EDEDED] transition-colors"
-            >
-              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-              </svg>
-              @toalesco
-            </a>
-
             {/* [ Iniciar_Sesión ] */}
             <a
               href="/login"
-              className="hidden sm:inline-flex items-center gap-1 text-xs font-mono text-[#8A9AAB] hover:text-[#EDEDED] transition-colors"
+              className="inline-flex items-center gap-1 text-xs font-mono text-[#8A9AAB] hover:text-[#EDEDED] transition-colors"
             >
               <span className="text-[#5a6a7a]">[</span>
               <span>Iniciar_Sesión</span>
@@ -309,7 +296,63 @@ export default function HomePage() {
               <ArrowRight className="ml-1.5 h-3 w-3" />
             </a>
           </div>
+
+          {/* Mobile hamburger */}
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="md:hidden flex flex-col gap-1.5 p-2"
+            aria-label="Toggle menu"
+          >
+            <span className={`block h-px w-5 bg-[#8A9AAB] transition-all duration-300 ${menuOpen ? "rotate-45 translate-y-[2.5px]" : ""}`} />
+            <span className={`block h-px w-5 bg-[#8A9AAB] transition-all duration-300 ${menuOpen ? "opacity-0" : ""}`} />
+            <span className={`block h-px w-5 bg-[#8A9AAB] transition-all duration-300 ${menuOpen ? "-rotate-45 -translate-y-[2.5px]" : ""}`} />
+          </button>
         </div>
+
+        {/* Mobile menu */}
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden border-t border-white/[0.04] bg-black/90 backdrop-blur-2xl"
+          >
+            <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
+              {navLinks.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  onClick={() => setMenuOpen(false)}
+                  className="text-sm font-mono text-[#8A9AAB] hover:text-[#00D2FF] transition-colors py-1.5"
+                >
+                  {">"} /{link.label}
+                </a>
+              ))}
+              <div className="border-t border-white/[0.04] pt-3 mt-1 flex flex-col gap-3">
+                <div className="flex items-center gap-2 text-[10px] font-mono text-[#8A9AAB] tracking-wider uppercase">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00E676] opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00E676] shadow-[0_0_6px_#00E676]" />
+                  </span>
+                  SYS_STATUS: OPERANDO 24/7
+                </div>
+                <a
+                  href="/login"
+                  className="text-sm font-mono text-[#8A9AAB] hover:text-[#EDEDED] transition-colors"
+                >
+                  <span className="text-[#5a6a7a]">[</span> Iniciar_Sesión <span className="text-[#5a6a7a]">]</span>
+                </a>
+                <a
+                  href="mailto:toalesco@tutamail.com?subject=Quiero%20m%C3%A1s%20informaci%C3%B3n"
+                  className="inline-flex h-9 items-center justify-center rounded-md border border-[#00D2FF]/30 bg-[#00D2FF]/5 px-3 text-xs font-mono font-medium text-[#00D2FF] hover:bg-[#00D2FF]/10 hover:border-[#00D2FF]/50 transition-all w-fit"
+                >
+                  EJECUTAR_CONTACTO <ArrowRight className="ml-1.5 h-3 w-3" />
+                </a>
+              </div>
+            </div>
+          </motion.div>
+        )}
       </header>
 
       <main className="flex-1">
@@ -603,6 +646,55 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Instagram */}
+        <section className="relative overflow-hidden py-24 bg-[#111111]">
+          <div className="absolute inset-0 bg-gradient-to-r from-[#00D2FF]/[0.01] via-transparent to-transparent" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#00D2FF]/10 to-transparent" />
+          <div className="container mx-auto px-4 relative">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="max-w-2xl mx-auto"
+            >
+              <div className="rounded-xl border border-white/[0.04] bg-black p-6 sm:p-8">
+                <div className="flex items-center gap-2 text-xs font-mono text-[#8A9AAB] mb-6">
+                  <span className="text-[#00E676]">$</span> curl -s https://instagram.com/toalesco
+                  <span className="animate-pulse text-[#00D2FF]">_</span>
+                </div>
+                <div className="flex flex-col sm:flex-row items-center gap-6">
+                  <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-[#00D2FF]/10 to-transparent border border-white/[0.04] flex items-center justify-center shrink-0">
+                    <svg className="h-10 w-10 text-[#00D2FF]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                    </svg>
+                  </div>
+                  <div className="text-center sm:text-left">
+                    <p className="text-lg font-semibold text-[#EDEDED] mb-1">@toalesco</p>
+                    <p className="text-sm text-[#8A9AAB] mb-4">
+                      Desarrollo web · Automatización · Soporte técnico · SaaS para clubes
+                    </p>
+                    <a
+                      href="https://instagram.com/toalesco"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-xs font-mono text-[#00D2FF] hover:text-[#00D2FF]/80 border border-[#00D2FF]/20 bg-[#00D2FF]/5 px-4 py-2 rounded-lg transition-all hover:border-[#00D2FF]/40"
+                    >
+                      <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                      </svg>
+                      SEGUIR_EN_INSTAGRAM &gt;
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
         {/* CTA */}
         <section className="relative overflow-hidden py-32 bg-[#111111]">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-[#00D2FF]/[0.03] blur-[150px]" />
@@ -635,19 +727,7 @@ export default function HomePage() {
             <a href="mailto:toalesco@tutamail.com" className="hover:text-[#00D2FF] transition-colors">
               toalesco@tutamail.com
             </a>
-            <a
-              href="https://instagram.com/toalesco"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-[#00D2FF] transition-colors flex items-center gap-1.5"
-            >
-              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-              </svg>
-              @toalesco
-            </a>
+
             <span className="flex items-center gap-1.5">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00E676] opacity-75" />
