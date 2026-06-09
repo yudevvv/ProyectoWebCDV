@@ -41,7 +41,7 @@ export default function DemoPage() {
               <User className="w-5 h-5" style={{ color: "#0891b2" }} />
               <div>
                 <p className="text-xs text-muted-foreground">USUARIO</p>
-                <p className="font-mono font-bold text-sm">demo</p>
+                <p className="font-mono font-bold text-sm">demo@toalesco.cl</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 rounded-lg" style={{ backgroundColor: "#f8fafc" }}>
