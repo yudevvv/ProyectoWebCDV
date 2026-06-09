@@ -70,6 +70,11 @@ function AdminConfigForm({ clubId }: { clubId: string }) {
     if (!club) return;
     setSaving(true);
     try {
+      const social: Record<string, string> = {};
+      if (form.facebookPageId) social.facebookPageId = form.facebookPageId;
+      if (form.facebookAccessToken) social.facebookAccessToken = form.facebookAccessToken;
+      if (form.instagramBusinessId) social.instagramBusinessId = form.instagramBusinessId;
+
       await updateClub(club.id, {
         name: form.name,
         description: form.description,
@@ -83,11 +88,7 @@ function AdminConfigForm({ clubId }: { clubId: string }) {
           primary: form.primaryColor,
           secondary: form.secondaryColor,
         },
-        social: {
-          facebookPageId: form.facebookPageId || undefined,
-          facebookAccessToken: form.facebookAccessToken || undefined,
-          instagramBusinessId: form.instagramBusinessId || undefined,
-        },
+        social: Object.keys(social).length > 0 ? social : {},
       });
       toast.success("Configuración guardada");
       refetch();
