@@ -10,7 +10,8 @@ const navLinks = [
   { label: "Servicios", href: "#servicios" },
   { label: "Precios", href: "#precios" },
   { label: "Demo", href: "/demo" },
-  { label: "Contacto", href: "mailto:contacto@toalesco.cl" },
+  { label: "Iniciar Sesión", href: "/login" },
+  { label: "Contacto", href: "mailto:toalesco@tutamail.com" },
 ];
 
 export function Navbar() {
@@ -23,15 +24,9 @@ export function Navbar() {
       role="banner"
     >
       <div className="container mx-auto flex h-14 items-center justify-between px-4">
-        <div className="flex items-center gap-2">
-          <div
-            className="w-4 h-4 rounded-full bg-emerald-500 border-2 border-emerald-700 dark:bg-emerald-400 dark:border-emerald-600"
-            aria-hidden="true"
-          />
-          <Link href="/" className="text-base font-bold tracking-tight text-slate-900 dark:text-white font-mono" aria-label="TOALESCO inicio">
-            TOALESCO
-          </Link>
-        </div>
+        <Link href="/" className="text-base font-bold tracking-tight text-slate-900 dark:text-white font-mono shrink-0" aria-label="TOALESCO inicio">
+          TOALESCO
+        </Link>
 
         <nav className="hidden md:flex items-center gap-0.5" aria-label="Navegación principal">
           {navLinks.map((link) =>
@@ -40,7 +35,6 @@ export function Navbar() {
                 key={link.label}
                 href={link.href}
                 className="px-3 py-1.5 text-xs font-mono font-medium text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-950/50 rounded transition-all"
-                aria-label={link.label}
               >
                 [{link.label}]
               </a>
@@ -49,7 +43,6 @@ export function Navbar() {
                 key={link.label}
                 href={link.href}
                 className="px-3 py-1.5 text-xs font-mono font-medium text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-950/50 rounded transition-all"
-                aria-label={link.label}
               >
                 [{link.label}]
               </a>
@@ -58,22 +51,14 @@ export function Navbar() {
                 key={link.label}
                 href={link.href}
                 className="px-3 py-1.5 text-xs font-mono font-medium text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-950/50 rounded transition-all"
-                aria-label={link.label}
               >
                 [{link.label}]
               </Link>
             )
           )}
-          <a
-            href="mailto:contacto@toalesco.cl?subject=Solicitar%20Demo"
-            className="ml-2 inline-flex h-7 items-center gap-1 rounded bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-400 px-3 text-[11px] font-mono font-bold text-white dark:text-slate-900 transition-all"
-            aria-label="Solicitar demo"
-          >
-            EJECUTAR_CONTACTO &gt;
-          </a>
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <button
             onClick={toggle}
             className="flex h-8 w-8 items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
@@ -129,13 +114,6 @@ export function Navbar() {
               </Link>
             )
           )}
-          <a
-            href="mailto:contacto@toalesco.cl?subject=Solicitar%20Demo"
-            onClick={() => setOpen(false)}
-            className="block px-3 py-2 text-sm font-mono font-bold text-center text-white bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-400 dark:text-slate-900 rounded mt-2 transition-all"
-          >
-            EJECUTAR_CONTACTO &gt;
-          </a>
         </nav>
       )}
     </header>

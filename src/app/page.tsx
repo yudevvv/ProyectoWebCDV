@@ -68,8 +68,8 @@ const team = [
 
 function TerminalWindow({ title, children, className = "" }: { title: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className={`border-2 border-slate-200 dark:border-slate-700 rounded-md overflow-hidden bg-white dark:bg-slate-900 ${className}`}>
-      <div className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 dark:bg-slate-800 border-b-2 border-slate-200 dark:border-slate-700">
+    <div className={`border-2 border-slate-200 dark:border-slate-700 rounded-md overflow-hidden bg-white dark:bg-slate-900 shadow-sm dark:shadow-none ${className}`}>
+      <div className="flex items-center gap-1.5 px-3 py-2 bg-slate-200 dark:bg-slate-800 border-b-2 border-slate-200 dark:border-slate-700">
         <span className="w-3 h-3 rounded-full bg-red-400" />
         <span className="w-3 h-3 rounded-full bg-amber-400" />
         <span className="w-3 h-3 rounded-full bg-emerald-400" />
@@ -100,7 +100,7 @@ export default function HomePage() {
       <main className="flex-1">
         {/* ===== HERO ===== */}
         <section className="relative overflow-hidden pt-28 pb-16 md:pt-32 md:pb-20">
-          <div className="absolute inset-0 bg-gradient-to-b from-cyan-50 via-white to-white dark:from-slate-900 dark:via-slate-950 dark:to-slate-950" />
+          <div className="absolute inset-0 bg-gradient-to-b from-cyan-100 via-white to-white dark:from-slate-900 dark:via-slate-950 dark:to-slate-950" />
           <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-cyan-400/10 dark:bg-cyan-500/5 blur-[120px]" />
           <div className="container mx-auto px-4 relative">
             <div className="max-w-4xl mx-auto text-center">
@@ -118,7 +118,7 @@ export default function HomePage() {
               </p>
               <div className="mt-8 flex items-center justify-center gap-3 flex-wrap">
                 <a
-                  href="mailto:contacto@toalesco.cl?subject=Solicitar%20Demo"
+                  href="mailto:toalesco@tutamail.com?subject=Solicitar%20Demo"
                   className="inline-flex h-11 items-center justify-center rounded bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-400 hover:shadow-lg hover:shadow-cyan-600/25 dark:hover:shadow-cyan-500/20 px-7 text-sm font-mono font-bold text-white dark:text-slate-900 transition-all border-b-2 border-cyan-800 dark:border-cyan-600"
                 >
                   Solicitar Demo
@@ -147,7 +147,7 @@ export default function HomePage() {
         </section>
 
         {/* ===== PROBLEMS ===== */}
-        <section className="py-16 bg-slate-50 dark:bg-slate-900 border-t-2 border-b-2 border-slate-200 dark:border-slate-800">
+        <section className="py-16 bg-slate-100 dark:bg-slate-900 border-t-2 border-b-2 border-slate-200 dark:border-slate-800">
           <div className="container mx-auto px-4">
             <p className="text-xs font-mono text-slate-400 dark:text-slate-500 text-center mb-2" aria-hidden="true">$ ./diagnostico.sh --scan</p>
             <h2 className="text-2xl md:text-3xl font-bold text-center text-slate-900 dark:text-white max-w-2xl mx-auto">
@@ -155,7 +155,7 @@ export default function HomePage() {
             </h2>
             <div className="mt-10 grid gap-4 sm:grid-cols-2 max-w-3xl mx-auto">
               {problems.map((p, idx) => (
-                <div key={p.title} className="border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded p-5 hover:border-red-300 dark:hover:border-red-600 hover:shadow-md dark:hover:shadow-red-900/20 transition-all">
+                <div key={p.title} className="border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded p-5 hover:border-red-300 dark:hover:border-red-600 shadow-sm hover:shadow-md dark:hover:shadow-red-900/20 transition-all">
                   <div className="flex items-center gap-3 mb-2">
                     <span className="text-[10px] font-mono font-bold text-red-400 dark:text-red-500 shrink-0">[ERROR_{idx + 1}]</span>
                     <div className="flex h-8 w-8 items-center justify-center rounded bg-red-50 dark:bg-red-950 text-red-500 dark:text-red-400 shrink-0">
@@ -171,7 +171,8 @@ export default function HomePage() {
         </section>
 
         {/* ===== MÓDULOS ===== */}
-        <section id="plataforma" className="py-16 bg-white dark:bg-slate-950">
+        <section id="plataforma" className="py-16 bg-white dark:bg-slate-950 relative">
+          <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.02]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, #0891b2 1px, transparent 0)", backgroundSize: "40px 40px" }} />
           <div className="container mx-auto px-4">
             <p className="text-xs font-mono text-slate-400 dark:text-slate-500 text-center mb-2" aria-hidden="true">$ ls /toalesco/modules/</p>
             <h2 className="text-2xl md:text-3xl font-bold text-center text-slate-900 dark:text-white">
@@ -179,7 +180,7 @@ export default function HomePage() {
             </h2>
             <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
               {modules.map((mod) => (
-                <div key={mod.title} className="border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded p-5 hover:border-cyan-300 dark:hover:border-cyan-600 hover:shadow-md dark:hover:shadow-cyan-900/20 transition-all">
+                <div key={mod.title} className="border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded p-5 hover:border-cyan-300 dark:hover:border-cyan-600 shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-cyan-900/20 transition-all">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded bg-cyan-50 dark:bg-cyan-950 text-cyan-600 dark:text-cyan-400">
                       <mod.icon className="h-5 w-5" />
@@ -271,7 +272,7 @@ export default function HomePage() {
           <div className="container mx-auto px-4">
             <div className="max-w-lg mx-auto">
               <p className="text-xs font-mono text-slate-400 dark:text-slate-500 text-center mb-3" aria-hidden="true">$ curl -s https://instagram.com/toalesco 2&gt;&amp;1</p>
-              <div className="border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded p-6 text-center hover:border-purple-300 dark:hover:border-purple-600 transition-all">
+              <div className="border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded p-6 text-center hover:border-purple-300 dark:hover:border-purple-600 shadow-sm transition-all">
                 <div className="flex items-center justify-center gap-2 mb-3">
                   <svg className="h-6 w-6 text-slate-700 dark:text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
@@ -296,7 +297,7 @@ export default function HomePage() {
         </section>
 
         {/* ===== EQUIPO ===== */}
-        <section className="py-16 bg-slate-50 dark:bg-slate-900 border-b-2 border-slate-200 dark:border-slate-800">
+        <section className="py-16 bg-slate-100 dark:bg-slate-900 border-b-2 border-slate-200 dark:border-slate-800">
           <div className="container mx-auto px-4 text-center">
             <p className="text-xs font-mono text-slate-400 dark:text-slate-500 mb-2" aria-hidden="true">$ cat /toalesco/team.json | jq</p>
             <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
@@ -305,7 +306,7 @@ export default function HomePage() {
             <p className="mt-2 text-xs font-mono text-slate-500 dark:text-slate-400">Detrás de TOALESCO hay un equipo comprometido con el deporte.</p>
             <div className="mt-8 flex flex-wrap justify-center gap-6">
               {team.map((t) => (
-                <div key={t.name} className="border-2 border-slate-200 dark:border-slate-700 rounded p-5 bg-white dark:bg-slate-800 w-44 hover:border-cyan-300 dark:hover:border-cyan-600 hover:shadow-md transition-all">
+                <div key={t.name} className="border-2 border-slate-300 dark:border-slate-700 rounded p-5 bg-white dark:bg-slate-800 w-44 hover:border-cyan-300 dark:hover:border-cyan-600 shadow-sm hover:shadow-md transition-all">
                   <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-100 to-cyan-200 dark:from-cyan-800 dark:to-cyan-700 flex items-center justify-center mx-auto mb-3 border-2 border-cyan-300 dark:border-cyan-600">
                     <span className="text-lg font-bold text-cyan-700 dark:text-cyan-300 font-mono">{t.initials}</span>
                   </div>
@@ -328,7 +329,7 @@ export default function HomePage() {
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 max-w-4xl mx-auto">
               {services.map((svc) => (
-                <div key={svc.title} className="border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded p-5 text-center hover:border-cyan-300 dark:hover:border-cyan-600 hover:shadow-md transition-all">
+                <div key={svc.title} className="border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded p-5 text-center hover:border-cyan-300 dark:hover:border-cyan-600 shadow-sm hover:shadow-md transition-all">
                   <div className="flex h-10 w-10 items-center justify-center rounded bg-cyan-50 dark:bg-cyan-950 text-cyan-600 dark:text-cyan-400 mx-auto mb-3">
                     <svc.icon className="h-5 w-5" />
                   </div>
@@ -341,7 +342,7 @@ export default function HomePage() {
         </section>
 
         {/* ===== PRICING ===== */}
-        <section id="precios" className="py-16 bg-slate-50 dark:bg-slate-900 border-b-2 border-slate-200 dark:border-slate-800">
+        <section id="precios" className="py-16 bg-slate-100 dark:bg-slate-900 border-b-2 border-slate-200 dark:border-slate-800">
           <div className="container mx-auto px-4">
             <p className="text-xs font-mono text-slate-400 dark:text-slate-500 text-center mb-2" aria-hidden="true">$ cat /toalesco/pricing.txt</p>
             <h2 className="text-2xl md:text-3xl font-bold text-center text-slate-900 dark:text-white">
@@ -355,7 +356,7 @@ export default function HomePage() {
               </div>
               <div className="grid gap-5 sm:grid-cols-2 max-w-2xl mx-auto">
                 {platformPlans.map((plan, idx) => (
-                  <div key={plan.name} className={`border-2 rounded p-5 bg-white dark:bg-slate-800 transition-all hover:shadow-lg ${idx === 1 ? "border-cyan-400 dark:border-cyan-500 shadow-md dark:shadow-cyan-900/20" : "border-slate-200 dark:border-slate-700 hover:border-cyan-300 dark:hover:border-cyan-600"}`}>
+                  <div key={plan.name} className={`border-2 rounded p-5 bg-white dark:bg-slate-800 transition-all hover:shadow-lg ${idx === 1 ? "border-cyan-400 dark:border-cyan-500 shadow-md dark:shadow-cyan-900/20" : "border-slate-300 dark:border-slate-700 shadow-sm hover:border-cyan-300 dark:hover:border-cyan-600"}`}>
                     {idx === 1 && <span className="text-[10px] font-mono font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950 border border-cyan-200 dark:border-cyan-800 rounded px-2 py-0.5 mb-2 inline-block">RECOMENDADO</span>}
                     <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">{plan.name}</p>
                     <p className="text-2xl font-bold text-slate-900 dark:text-white font-mono">{plan.price}<span className="text-xs text-slate-500 font-normal ml-1">{plan.period}</span></p>
@@ -368,7 +369,7 @@ export default function HomePage() {
                       ))}
                     </ul>
                     <a
-                      href={`mailto:contacto@toalesco.cl?subject=Quiero%20contratar%20${plan.name.replace(/\s/g, '%20')}`}
+                      href={`mailto:toalesco@tutamail.com?subject=Quiero%20contratar%20${plan.name.replace(/\s/g, '%20')}`}
                       className="mt-4 inline-flex h-9 w-full items-center justify-center rounded bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-400 border-b-2 border-cyan-800 dark:border-cyan-600 text-xs font-mono font-bold text-white dark:text-slate-900 transition-all"
                     >
                       Contratar ▸
@@ -385,7 +386,7 @@ export default function HomePage() {
               </div>
               <div className="grid gap-4 sm:grid-cols-3 max-w-3xl mx-auto">
                 {servicePlans.map((plan) => (
-                  <div key={plan.name} className="border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded p-5 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-md transition-all">
+                  <div key={plan.name} className="border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded p-5 hover:border-slate-300 dark:hover:border-slate-600 shadow-sm hover:shadow-md transition-all">
                     <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">{plan.name}</p>
                     <p className="text-xl font-bold text-slate-900 dark:text-white font-mono">{plan.price}<span className="text-xs text-slate-500 font-normal ml-1">{plan.period}</span></p>
                     <ul className="mt-4 space-y-1.5">
@@ -397,7 +398,7 @@ export default function HomePage() {
                       ))}
                     </ul>
                     <a
-                      href={`mailto:contacto@toalesco.cl?subject=Cotización%20${plan.name.replace(/\s/g, '%20')}`}
+                      href={`mailto:toalesco@tutamail.com?subject=Cotización%20${plan.name.replace(/\s/g, '%20')}`}
                       className="mt-4 inline-flex h-9 w-full items-center justify-center rounded border-2 border-slate-300 dark:border-slate-600 hover:border-cyan-400 dark:hover:border-cyan-500 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-950/50 text-xs font-mono font-medium text-slate-700 dark:text-slate-300 transition-all"
                     >
                       Cotizar ▸
@@ -463,13 +464,13 @@ export default function HomePage() {
             </p>
             <div className="mt-8 flex items-center justify-center gap-3 flex-wrap">
               <a
-                href="mailto:contacto@toalesco.cl?subject=Solicitar%20Demo"
+                href="mailto:toalesco@tutamail.com?subject=Solicitar%20Demo"
                 className="inline-flex h-11 items-center justify-center rounded bg-white hover:bg-slate-100 hover:shadow-xl px-7 text-sm font-mono font-bold text-cyan-800 transition-all border-b-2 border-slate-300"
               >
                 Solicitar Demo
               </a>
               <a
-                href="mailto:contacto@toalesco.cl?subject=Quiero%20hablar%20con%20TOALESCO"
+                href="mailto:toalesco@tutamail.com?subject=Quiero%20hablar%20con%20TOALESCO"
                 className="inline-flex h-11 items-center justify-center rounded border-2 border-white/40 hover:bg-white/10 hover:border-white/60 px-7 text-sm font-mono font-medium text-white transition-all"
               >
                 Hablar con Nosotros
@@ -492,7 +493,7 @@ export default function HomePage() {
               <a href="#servicios" className="text-[10px] font-mono font-medium text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">[Servicios]</a>
               <a href="#precios" className="text-[10px] font-mono font-medium text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">[Precios]</a>
               <a href="/demo" className="text-[10px] font-mono font-medium text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">[Demo]</a>
-              <a href="mailto:contacto@toalesco.cl" className="text-[10px] font-mono font-medium text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">[Contacto]</a>
+              <a href="mailto:toalesco@tutamail.com" className="text-[10px] font-mono font-medium text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">[Contacto]</a>
             </div>
             <p className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500">
               <span className="text-emerald-500">●</span> SYS_STATUS: <span className="text-emerald-500">OPERANDO 24/7</span>

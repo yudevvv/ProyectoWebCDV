@@ -85,8 +85,8 @@ export default function DemoPage() {
         <div className="text-center py-8 border-t">
           <p className="text-sm text-muted-foreground">
             ¿Preguntas? Escríbenos a{" "}
-            <a href="mailto:contacto@toalesco.cl" className="font-medium" style={{ color: "#0891b2" }}>
-              contacto@toalesco.cl
+            <a href="mailto:toalesco@tutamail.com" className="font-medium" style={{ color: "#0891b2" }}>
+              toalesco@tutamail.com
             </a>
           </p>
         </div>
