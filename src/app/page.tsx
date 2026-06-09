@@ -118,14 +118,14 @@ function StaticNetwork() {
           ctx.beginPath();
           ctx.moveTo(dots[i].x, dots[i].y);
           ctx.lineTo(dots[j].x, dots[j].y);
-          ctx.strokeStyle = `rgba(0, 188, 212, ${(1 - dist / 200) * 0.08})`;
+          ctx.strokeStyle = `rgba(8, 145, 178, ${(1 - dist / 200) * 0.1})`;
           ctx.lineWidth = 0.5;
           ctx.stroke();
         }
       }
       ctx.beginPath();
       ctx.arc(dots[i].x, dots[i].y, 1.5, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(0, 188, 212, 0.25)";
+      ctx.fillStyle = "rgba(8, 145, 178, 0.3)";
       ctx.fill();
     }
   }, []);
@@ -155,7 +155,7 @@ function TypingStatus() {
   return (
     <span className="font-mono tracking-wide">
       {text}
-      {cursor && text.length < fullText.length ? <span className="text-[#00bcd4]">_</span> : null}
+      {cursor && text.length < fullText.length ? <span className="text-[#0891b2]">_</span> : null}
     </span>
   );
 }
@@ -174,6 +174,16 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
+      {/* Scanline overlay */}
+      <div
+        className="fixed inset-0 pointer-events-none z-[60] opacity-[0.012]"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(8,145,178,0.08) 1px, rgba(8,145,178,0.08) 2px)",
+          backgroundSize: "100% 2px",
+        }}
+      />
+
       {/* Navbar */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
@@ -183,11 +193,10 @@ export default function HomePage() {
         }`}
       >
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <span className="text-xl font-bold tracking-tight text-gray-900 shrink-0">
+          <span className="text-xl font-bold tracking-tight text-slate-900 shrink-0">
             TOALESCO
           </span>
 
-          {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => (
               <a
@@ -196,10 +205,10 @@ export default function HomePage() {
                 onClick={() => setMenuOpen(false)}
                 onMouseEnter={() => setHoveredLink(link.label)}
                 onMouseLeave={() => setHoveredLink(null)}
-                className="relative px-3 py-1.5 text-xs font-mono text-gray-500 hover:text-[#00bcd4] transition-colors"
+                className="relative px-3 py-1.5 text-xs font-mono text-slate-500 hover:text-[#0891b2] transition-colors"
               >
                 {hoveredLink === link.label ? (
-                  <span>{">"} /{link.label}</span>
+                  <span className="text-[#0891b2]">{">"} /{link.label}</span>
                 ) : (
                   <span>/{link.label}</span>
                 )}
@@ -207,41 +216,39 @@ export default function HomePage() {
             ))}
           </nav>
 
-          {/* Desktop right */}
           <div className="hidden md:flex items-center gap-4">
-            <span className="flex items-center gap-2 text-[10px] font-mono text-gray-400 tracking-wider uppercase">
+            <span className="flex items-center gap-2 text-[10px] font-mono text-slate-400 tracking-wider uppercase">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00E676] opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00E676]" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#059669] opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#059669]" />
               </span>
               SYS_STATUS: OPERANDO 24/7
             </span>
             <a
               href="/login"
-              className="inline-flex items-center gap-1 text-xs font-mono text-gray-500 hover:text-gray-900 transition-colors"
+              className="inline-flex items-center gap-1 text-xs font-mono text-slate-500 hover:text-slate-900 transition-colors"
             >
-              <span className="text-gray-300">[</span>
+              <span className="text-slate-300">[</span>
               <span>Iniciar_Sesión</span>
-              <span className="text-gray-300">]</span>
+              <span className="text-slate-300">]</span>
             </a>
             <a
               href="mailto:toalesco@tutamail.com?subject=Quiero%20m%C3%A1s%20informaci%C3%B3n"
-              className="inline-flex h-8 items-center justify-center rounded-md border border-[#00bcd4]/30 bg-[#00bcd4]/5 px-3 text-[11px] font-mono font-medium text-[#00bcd4] hover:bg-[#00bcd4]/10 hover:border-[#00bcd4]/50 transition-all"
+              className="inline-flex h-8 items-center justify-center rounded-md border border-[#0891b2]/40 bg-[#0891b2]/5 px-3 text-[11px] font-mono font-medium text-[#0891b2] hover:bg-[#0891b2]/10 hover:border-[#0891b2]/60 transition-all"
             >
               EJECUTAR_CONTACTO
               <ArrowRight className="ml-1.5 h-3 w-3" />
             </a>
           </div>
 
-          {/* Mobile hamburger */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="md:hidden flex flex-col gap-1.5 p-2"
             aria-label="Toggle menu"
           >
-            <span className={`block h-px w-5 bg-gray-500 transition-all duration-300 ${menuOpen ? "rotate-45 translate-y-[2.5px]" : ""}`} />
-            <span className={`block h-px w-5 bg-gray-500 transition-all duration-300 ${menuOpen ? "opacity-0" : ""}`} />
-            <span className={`block h-px w-5 bg-gray-500 transition-all duration-300 ${menuOpen ? "-rotate-45 -translate-y-[2.5px]" : ""}`} />
+            <span className={`block h-px w-5 bg-slate-500 transition-all duration-300 ${menuOpen ? "rotate-45 translate-y-[2.5px]" : ""}`} />
+            <span className={`block h-px w-5 bg-slate-500 transition-all duration-300 ${menuOpen ? "opacity-0" : ""}`} />
+            <span className={`block h-px w-5 bg-slate-500 transition-all duration-300 ${menuOpen ? "-rotate-45 -translate-y-[2.5px]" : ""}`} />
           </button>
         </div>
 
@@ -259,28 +266,28 @@ export default function HomePage() {
                   key={link.label}
                   href={link.href}
                   onClick={() => setMenuOpen(false)}
-                  className="text-sm font-mono text-gray-500 hover:text-[#00bcd4] transition-colors py-1.5"
+                  className="text-sm font-mono text-slate-500 hover:text-[#0891b2] transition-colors py-1.5"
                 >
                   {">"} /{link.label}
                 </a>
               ))}
               <div className="border-t border-gray-200 pt-3 mt-1 flex flex-col gap-3">
-                <span className="flex items-center gap-2 text-[10px] font-mono text-gray-400 tracking-wider uppercase">
+                <span className="flex items-center gap-2 text-[10px] font-mono text-slate-400 tracking-wider uppercase">
                   <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00E676] opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00E676]" />
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#059669] opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#059669]" />
                   </span>
                   SYS_STATUS: OPERANDO 24/7
                 </span>
                 <a
                   href="/login"
-                  className="text-sm font-mono text-gray-500 hover:text-gray-900 transition-colors"
+                  className="text-sm font-mono text-slate-500 hover:text-slate-900 transition-colors"
                 >
-                  <span className="text-gray-300">[</span> Iniciar_Sesión <span className="text-gray-300">]</span>
+                  <span className="text-slate-300">[</span> Iniciar_Sesión <span className="text-slate-300">]</span>
                 </a>
                 <a
                   href="mailto:toalesco@tutamail.com?subject=Quiero%20m%C3%A1s%20informaci%C3%B3n"
-                  className="inline-flex h-9 items-center justify-center rounded-md border border-[#00bcd4]/30 bg-[#00bcd4]/5 px-3 text-xs font-mono font-medium text-[#00bcd4] hover:bg-[#00bcd4]/10 hover:border-[#00bcd4]/50 transition-all w-fit"
+                  className="inline-flex h-9 items-center justify-center rounded-md border border-[#0891b2]/40 bg-[#0891b2]/5 px-3 text-xs font-mono font-medium text-[#0891b2] hover:bg-[#0891b2]/10 hover:border-[#0891b2]/60 transition-all w-fit"
                 >
                   EJECUTAR_CONTACTO <ArrowRight className="ml-1.5 h-3 w-3" />
                 </a>
@@ -292,14 +299,14 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="relative overflow-hidden min-h-[85vh] flex items-center bg-white">
-          <div className="absolute inset-0 bg-gradient-to-b from-[#00bcd4]/[0.02] via-transparent to-transparent" />
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-[#00bcd4]/[0.03] blur-[120px]" />
-          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
+        <section className="relative overflow-hidden min-h-[90vh] flex items-center bg-white">
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0891b2]/[0.02] via-transparent to-transparent" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-[#0891b2]/[0.04] blur-[150px]" />
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
           <div
-            className="absolute inset-0 opacity-[0.03]"
+            className="absolute inset-0 opacity-[0.04]"
             style={{
-              backgroundImage: "linear-gradient(0deg, #e5e7eb 1px, transparent 1px)",
+              backgroundImage: "linear-gradient(0deg, #cbd5e1 1px, transparent 1px)",
               backgroundSize: "100% 40px",
             }}
           />
@@ -316,26 +323,26 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
-                className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 text-sm text-gray-500 mb-8"
+                className="inline-flex items-center gap-2 rounded-lg border border-[#0891b2]/20 bg-[#0891b2]/5 px-4 py-1.5 text-sm text-[#0891b2] mb-8 font-mono"
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-[#00E676] animate-pulse" />
+                <span className="h-1.5 w-1.5 rounded-full bg-[#059669] animate-pulse shadow-[0_0_4px_#059669]" />
                 <TypingStatus />
               </motion.div>
               <motion.h1
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="text-5xl sm:text-7xl md:text-8xl font-bold tracking-tight leading-[0.9] text-gray-900"
+                className="text-5xl sm:text-7xl md:text-8xl font-bold tracking-tight leading-[0.9] text-slate-900"
               >
                 Hacemos realidad
                 <br />
-                <span className="text-[#00bcd4]">tu proyecto digital</span>
+                <span className="text-[#0891b2]">tu proyecto digital</span>
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
-                className="mx-auto mt-6 max-w-2xl text-lg text-gray-500"
+                className="mx-auto mt-6 max-w-2xl text-lg text-slate-500"
               >
                 Creamos páginas web, automatizamos procesos, reparamos equipos
                 y desarrollamos plataformas SaaS para clubes deportivos.
@@ -348,14 +355,14 @@ export default function HomePage() {
               >
                 <a
                   href="#servicios"
-                  className="group inline-flex h-12 items-center justify-center rounded-lg bg-[#00bcd4] px-6 text-sm font-medium text-white hover:bg-[#00bcd4]/90 transition-all"
+                  className="group inline-flex h-12 items-center justify-center rounded-lg bg-[#0891b2] px-6 text-sm font-medium text-white hover:bg-[#0891b2]/90 transition-all shadow-[0_0_16px_rgba(8,145,178,0.2)] hover:shadow-[0_0_24px_rgba(8,145,178,0.3)]"
                 >
                   Ver servicios
                   <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
                 </a>
                 <a
                   href="mailto:toalesco@tutamail.com?subject=Quiero%20m%C3%A1s%20informaci%C3%B3n"
-                  className="inline-flex h-12 items-center justify-center rounded-lg border border-gray-200 bg-white px-6 text-sm font-medium text-gray-700 hover:border-[#00bcd4]/30 hover:text-[#00bcd4] transition-all"
+                  className="inline-flex h-12 items-center justify-center rounded-lg border-2 border-slate-200 bg-white px-6 text-sm font-medium text-slate-700 hover:border-[#0891b2]/30 hover:text-[#0891b2] transition-all"
                 >
                   <Mail className="mr-2 h-4 w-4" />
                   Contáctanos
@@ -366,7 +373,7 @@ export default function HomePage() {
         </section>
 
         {/* Stats */}
-        <section className="border-y border-gray-100 bg-gray-50/50 py-14">
+        <section className="border-y border-slate-200 bg-slate-50 py-14">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {stats.map((stat, i) => (
@@ -378,8 +385,8 @@ export default function HomePage() {
                   transition={{ duration: 0.4, delay: i * 0.1 }}
                   className="text-center"
                 >
-                  <div className="text-3xl md:text-4xl font-black text-gray-900">{stat.number}</div>
-                  <div className="mt-1 text-sm text-gray-500">{stat.label}</div>
+                  <div className="text-3xl md:text-4xl font-black text-[#0891b2]">{stat.number}</div>
+                  <div className="mt-1 text-sm text-slate-500 font-mono text-xs">{stat.label.toUpperCase()}</div>
                 </motion.div>
               ))}
             </div>
@@ -395,9 +402,9 @@ export default function HomePage() {
               viewport={{ once: true }}
               className="text-center mb-16"
             >
-              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900">Nuestros servicios</h2>
-              <p className="mt-4 text-gray-500 max-w-2xl mx-auto text-lg">
-                Soluciones tecnológicas diseñadas para impulsar tu negocio
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900">Nuestros servicios</h2>
+              <p className="mt-4 text-slate-500 max-w-2xl mx-auto text-lg font-mono text-sm tracking-wide">
+                $ ls -la /toalesco/services/
               </p>
             </motion.div>
 
@@ -410,26 +417,26 @@ export default function HomePage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: i * 0.1 }}
-                  className="group relative overflow-hidden rounded-xl bg-gray-50 border border-gray-200 p-8 hover:border-[#00bcd4]/30 transition-all duration-500"
+                  className="group relative overflow-hidden rounded-xl bg-slate-50 border border-slate-200 p-8 hover:border-[#0891b2]/30 transition-all duration-500"
                 >
-                  <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(0,188,212,0.02)_50%,transparent_75%)] bg-[length:250%_250%] group-hover:bg-[position:100%_100%] transition-all duration-700" />
-                  <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-[#00bcd4]/[0.02] blur-3xl group-hover:bg-[#00bcd4]/[0.04] transition-all duration-700" />
+                  <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(8,145,178,0.015)_50%,transparent_75%)] bg-[length:250%_250%] group-hover:bg-[position:100%_100%] transition-all duration-700" />
+                  <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-[#0891b2]/[0.02] blur-3xl" />
                   <div className="relative">
                     <div className="flex items-center gap-3 mb-5">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-white border border-gray-200 group-hover:border-[#00bcd4]/20 transition-all">
-                        <service.icon className="h-5 w-5 text-[#00bcd4]" />
+                      <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-white border border-slate-200 group-hover:border-[#0891b2]/20 transition-all">
+                        <service.icon className="h-5 w-5 text-[#0891b2]" />
                       </div>
-                      <span className="text-xs text-gray-400 font-mono tracking-wide">
-                        {">"} {service.code}
+                      <span className="text-xs text-slate-400 font-mono tracking-wide">
+                        <span className="text-[#0891b2]">{">"}</span> {service.code}
                       </span>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">{service.title}</h3>
-                    <p className="text-sm text-gray-500 leading-relaxed mb-6">{service.description}</p>
+                    <h3 className="text-lg font-semibold text-slate-900 mb-3">{service.title}</h3>
+                    <p className="text-sm text-slate-500 leading-relaxed mb-6">{service.description}</p>
                     <a
                       href={`mailto:toalesco@tutamail.com?subject=${service.mailSubject}`}
-                      className="inline-flex items-center gap-1.5 text-sm font-medium text-[#00bcd4] hover:text-[#00bcd4]/70 transition-colors"
+                      className="inline-flex items-center gap-1.5 text-sm font-mono font-medium text-[#0891b2] hover:text-[#0891b2]/70 transition-colors"
                     >
-                      {service.cta}
+                      <span className="text-slate-300">$</span> {service.cta}
                       <ArrowRight className="h-3.5 w-3.5" />
                     </a>
                   </div>
@@ -440,9 +447,9 @@ export default function HomePage() {
         </section>
 
         {/* Club Platform */}
-        <section id="clubes" className="relative overflow-hidden py-32 bg-gray-50/50">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#00bcd4]/[0.01] via-transparent to-transparent" />
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
+        <section id="clubes" className="relative overflow-hidden py-32 bg-slate-50">
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0891b2]/[0.015] via-transparent to-transparent" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
           <div className="container mx-auto px-4 relative">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -452,18 +459,15 @@ export default function HomePage() {
             >
               <div className="grid gap-16 lg:grid-cols-2 items-center">
                 <div>
-                  <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-500 mb-6 font-mono tracking-wide">
-                    <span className="text-[#00E676] text-xs">$</span> producto_destacado --feature=clubes
+                  <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-500 mb-6 font-mono tracking-wide">
+                    <span className="text-[#059669]">$</span> ./producto_destacado --feature clubes
                   </div>
-                  <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 mb-6">
+                  <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 mb-6">
                     Plataforma SaaS para
                     <br />
-                    <span className="text-[#00bcd4] relative">
-                      Clubes Deportivos
-                      <span className="absolute -bottom-1 left-0 right-0 h-px bg-gradient-to-r from-[#00bcd4]/50 to-transparent" />
-                    </span>
+                    <span className="text-[#0891b2]">Clubes Deportivos</span>
                   </h2>
-                  <p className="text-lg text-gray-500 leading-relaxed mb-8">
+                  <p className="text-lg text-slate-500 leading-relaxed mb-8">
                     Transformá la gestión de tu club con nuestra plataforma todo-en-uno.
                     Cada club tiene su propio sitio web con diseño personalizado,
                     dominio propio y todas las herramientas necesarias para crecer.
@@ -476,28 +480,28 @@ export default function HomePage() {
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.3, delay: i * 0.03 }}
-                        className="flex items-center gap-2.5 text-sm text-gray-500"
+                        className="flex items-center gap-2.5 text-sm text-slate-600"
                       >
-                        <CheckCircle2 className="h-4 w-4 text-[#00bcd4] shrink-0" />
-                        <span>{f}</span>
+                        <CheckCircle2 className="h-4 w-4 text-[#0891b2] shrink-0" />
+                        <span className="font-mono text-xs">{f}</span>
                       </motion.div>
                     ))}
                   </div>
                   <a
                     href="mailto:toalesco@tutamail.com?subject=Quiero%20la%20plataforma%20para%20mi%20club%20deportivo"
-                    className="group inline-flex h-12 items-center justify-center rounded-lg bg-[#00bcd4] px-6 text-sm font-medium text-white hover:bg-[#00bcd4]/90 transition-all"
+                    className="group inline-flex h-12 items-center justify-center rounded-lg bg-[#0891b2] px-6 text-sm font-medium text-white hover:bg-[#0891b2]/90 transition-all shadow-[0_0_16px_rgba(8,145,178,0.15)]"
                   >
                     Quiero esto para mi club
                     <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
                   </a>
                 </div>
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#00bcd4]/[0.03] via-transparent to-transparent rounded-2xl blur-3xl" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#0891b2]/[0.03] via-transparent to-transparent rounded-2xl blur-3xl" />
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
-                    className="relative rounded-xl border border-gray-200 bg-white p-8"
+                    className="relative rounded-xl border border-slate-200 bg-white p-8"
                   >
                     <div className="grid grid-cols-2 gap-4">
                       {[
@@ -512,11 +516,11 @@ export default function HomePage() {
                           whileInView={{ opacity: 1, y: 0 }}
                           viewport={{ once: true }}
                           transition={{ duration: 0.4, delay: 0.2 + i * 0.1 }}
-                          className="rounded-lg border border-gray-100 bg-gray-50 p-5 text-center hover:border-[#00bcd4]/20 transition-all"
+                          className="rounded-lg border border-slate-100 bg-slate-50 p-5 text-center hover:border-[#0891b2]/20 hover:bg-[#0891b2]/[0.01] transition-all"
                         >
-                          <item.icon className="h-8 w-8 text-[#00bcd4] mx-auto mb-2" />
-                          <p className="font-semibold text-sm text-gray-900">{item.label}</p>
-                          <p className="text-xs text-gray-400 mt-0.5">{item.desc}</p>
+                          <item.icon className="h-8 w-8 text-[#0891b2] mx-auto mb-2" />
+                          <p className="font-semibold text-sm text-slate-900">{item.label}</p>
+                          <p className="text-xs text-slate-400 mt-0.5 font-mono">{item.desc}</p>
                         </motion.div>
                       ))}
                     </div>
@@ -524,6 +528,22 @@ export default function HomePage() {
                 </div>
               </div>
             </motion.div>
+          </div>
+        </section>
+
+        {/* Terminal output */}
+        <section className="py-12 bg-slate-900">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto">
+              <div className="text-xs font-mono text-slate-400 space-y-2 leading-relaxed">
+                <p><span className="text-[#059669]">$</span> cat /toalesco/metrics.txt</p>
+                <p className="text-slate-300">Proyectos entregados: <span className="text-[#0891b2]">15+</span></p>
+                <p className="text-slate-300">Tiempo operativo: <span className="text-[#059669]">99.9%</span></p>
+                <p className="text-slate-300">Soporte: <span className="text-[#059669]">24/7 activo</span></p>
+                <p className="text-slate-300">Estado: <span className="text-[#059669]">✅ online</span></p>
+                <p><span className="text-[#059669]">$</span> <span className="animate-pulse text-slate-400">_</span></p>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -535,8 +555,8 @@ export default function HomePage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-3">Equipo</h2>
-              <p className="text-gray-500 text-sm mb-10 max-w-md mx-auto">Los que hacemos posible TOALESCO</p>
+              <h2 className="text-2xl font-bold tracking-tight text-slate-900 mb-3">Equipo</h2>
+              <p className="text-slate-500 text-sm mb-10 max-w-md mx-auto font-mono">$ cat /toalesco/team.json</p>
               <div className="flex flex-wrap items-center justify-center gap-12">
                 {team.map((member, i) => (
                   <motion.div
@@ -547,11 +567,11 @@ export default function HomePage() {
                     transition={{ duration: 0.4, delay: i * 0.1 }}
                     className="flex flex-col items-center group"
                   >
-                    <div className="h-16 w-16 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center text-lg font-bold text-[#00bcd4] mb-3 group-hover:border-[#00bcd4]/30 transition-all">
+                    <div className="h-16 w-16 rounded-full bg-slate-50 border-2 border-slate-200 flex items-center justify-center text-lg font-bold text-[#0891b2] mb-3 group-hover:border-[#0891b2]/40 transition-all">
                       {member.initials}
                     </div>
-                    <p className="text-sm font-semibold text-gray-900">{member.name}</p>
-                    <p className="text-xs text-gray-500">{member.role}</p>
+                    <p className="text-sm font-semibold text-slate-900">{member.name}</p>
+                    <p className="text-xs text-slate-500 font-mono">{member.role}</p>
                   </motion.div>
                 ))}
               </div>
@@ -560,9 +580,9 @@ export default function HomePage() {
         </section>
 
         {/* Instagram */}
-        <section className="relative overflow-hidden py-24 bg-gray-50/50">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#00bcd4]/[0.01] via-transparent to-transparent" />
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
+        <section className="relative overflow-hidden py-24 bg-slate-50">
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0891b2]/[0.015] via-transparent to-transparent" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
           <div className="container mx-auto px-4 relative">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -570,29 +590,29 @@ export default function HomePage() {
               viewport={{ once: true }}
               className="max-w-2xl mx-auto"
             >
-              <div className="rounded-xl border border-gray-200 bg-white p-6 sm:p-8">
-                <div className="flex items-center gap-2 text-xs font-mono text-gray-400 mb-6">
-                  <span className="text-[#00E676]">$</span> curl -s https://instagram.com/toalesco
-                  <span className="animate-pulse text-[#00bcd4]">_</span>
+              <div className="rounded-xl border border-slate-200 bg-white p-6 sm:p-8">
+                <div className="flex items-center gap-2 text-xs font-mono text-slate-400 mb-6">
+                  <span className="text-[#059669]">$</span> curl -s https://instagram.com/toalesco
+                  <span className="animate-pulse text-[#0891b2]">_</span>
                 </div>
                 <div className="flex flex-col sm:flex-row items-center gap-6">
-                  <div className="h-20 w-20 rounded-2xl bg-gray-50 border border-gray-200 flex items-center justify-center shrink-0">
-                    <svg className="h-10 w-10 text-[#00bcd4]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <div className="h-20 w-20 rounded-2xl bg-slate-50 border-2 border-slate-200 flex items-center justify-center shrink-0">
+                    <svg className="h-10 w-10 text-[#0891b2]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
                       <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
                       <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
                     </svg>
                   </div>
                   <div className="text-center sm:text-left">
-                    <p className="text-lg font-semibold text-gray-900 mb-1">@toalesco</p>
-                    <p className="text-sm text-gray-500 mb-4">
+                    <p className="text-lg font-semibold text-slate-900 mb-1">@toalesco</p>
+                    <p className="text-sm text-slate-500 mb-4 font-mono text-xs">
                       Desarrollo web · Automatización · Soporte técnico · SaaS para clubes
                     </p>
                     <a
                       href="https://instagram.com/toalesco"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-xs font-mono text-[#00bcd4] hover:text-[#00bcd4]/70 border border-[#00bcd4]/20 bg-[#00bcd4]/5 px-4 py-2 rounded-lg transition-all hover:border-[#00bcd4]/40"
+                      className="inline-flex items-center gap-2 text-xs font-mono text-[#0891b2] hover:text-[#0891b2]/70 border border-[#0891b2]/30 bg-[#0891b2]/5 px-4 py-2 rounded-lg transition-all hover:border-[#0891b2]/50"
                     >
                       <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
@@ -616,11 +636,11 @@ export default function HomePage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 mb-4">¿Listo para empezar?</h2>
-              <p className="text-gray-500 max-w-xl mx-auto mb-8 text-lg">Cuéntanos tu idea y te ayudamos a hacerla realidad</p>
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 mb-4">¿Listo para empezar?</h2>
+              <p className="text-slate-500 max-w-xl mx-auto mb-8 text-lg">Cuéntanos tu idea y te ayudamos a hacerla realidad</p>
               <a
                 href="mailto:toalesco@tutamail.com?subject=Quiero%20m%C3%A1s%20informaci%C3%B3n%20sobre%20TOALESCO"
-                className="group inline-flex h-12 items-center justify-center rounded-lg bg-[#00bcd4] px-8 text-sm font-medium text-white hover:bg-[#00bcd4]/90 transition-all"
+                className="group inline-flex h-12 items-center justify-center rounded-lg bg-[#0891b2] px-8 text-sm font-medium text-white hover:bg-[#0891b2]/90 transition-all shadow-[0_0_16px_rgba(8,145,178,0.2)]"
               >
                 <Mail className="mr-2 h-4 w-4" />
                 Escríbenos
@@ -630,18 +650,18 @@ export default function HomePage() {
         </section>
       </main>
 
-      <footer className="border-t border-gray-100 py-12 bg-white">
+      <footer className="border-t border-slate-200 py-12 bg-white">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-lg font-bold text-gray-900 mb-2">TOALESCO</p>
-          <p className="text-sm text-gray-500 mb-1">Soluciones tecnológicas para PyMEs — Chile</p>
-          <div className="flex items-center justify-center gap-4 text-xs text-gray-400">
-            <a href="mailto:toalesco@tutamail.com" className="hover:text-[#00bcd4] transition-colors">
+          <p className="text-lg font-bold text-slate-900 mb-2">TOALESCO</p>
+          <p className="text-sm text-slate-500 mb-1 font-mono text-xs">Soluciones tecnológicas para PyMEs — Chile</p>
+          <div className="flex items-center justify-center gap-4 text-xs text-slate-400 font-mono">
+            <a href="mailto:toalesco@tutamail.com" className="hover:text-[#0891b2] transition-colors">
               toalesco@tutamail.com
             </a>
             <span className="flex items-center gap-1.5">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00E676] opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00E676]" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#059669] opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#059669]" />
               </span>
               Soporte Operando 24/7
             </span>
