@@ -25,34 +25,30 @@ const adminLinks = [
 export function AdminNav({ clubId }: AdminNavProps) {
   const { data: club } = useClub(clubId);
   const pathname = usePathname();
-
-  const primary = club?.colors.primary ?? "#0891b2";
+  const primary = club?.colors?.primary ?? "#0891b2";
 
   return (
-    <nav className="border-b bg-white sticky top-0 z-50" style={{ borderColor: `${primary}20` }}>
-      <div className="container mx-auto flex h-16 items-center gap-3 px-4">
+    <nav className="border-b bg-white">
+      <div className="container mx-auto flex h-14 items-center gap-3 px-4" style={{ borderBottom: `2px solid ${primary}18` }}>
         {club?.logo ? (
           <Image
             src={club.logo}
             alt={club.name}
-            width={36}
-            height={36}
+            width={28}
+            height={28}
             className="rounded-full object-cover shrink-0"
           />
         ) : (
           <div
-            className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-white font-bold text-sm"
+            className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-white font-bold text-xs"
             style={{ backgroundColor: primary }}
           >
             {club?.name?.charAt(0) ?? "?"}
           </div>
         )}
-        <div className="flex flex-col leading-tight mr-2 shrink-0">
-          <span className="font-bold text-sm">{club?.name ?? "Club"}</span>
-          <span className="text-xs text-muted-foreground">Panel de Administración</span>
-        </div>
+        <span className="font-semibold text-sm mr-4">{club?.name ?? "Club"}</span>
 
-        <div className="flex items-center gap-1 overflow-x-auto ml-4">
+        <div className="flex items-center gap-0.5 overflow-x-auto">
           {adminLinks.map((link) => {
             const fullHref = `/admin/${clubId}${link.href}`;
             const isActive = pathname === fullHref;
@@ -60,10 +56,10 @@ export function AdminNav({ clubId }: AdminNavProps) {
               <Link
                 key={link.href}
                 href={fullHref}
-                className="px-3 py-1.5 rounded-md transition-colors whitespace-nowrap text-sm font-medium"
+                className="px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap"
                 style={{
-                  backgroundColor: isActive ? `${primary}12` : "transparent",
                   color: isActive ? primary : "var(--muted-foreground)",
+                  backgroundColor: isActive ? `${primary}0d` : "transparent",
                 }}
               >
                 {link.label}
