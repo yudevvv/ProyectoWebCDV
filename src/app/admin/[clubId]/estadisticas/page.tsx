@@ -1,20 +1,24 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { AdminNav } from "@/components/admin/AdminNav";
-import { useClub } from "@/hooks/useFirestore";
-import { StatCard } from "@/components/shared/StatCard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type AdminEstadisticasPageProps = {
   params: Promise<{ clubId: string }>;
 };
 
 export default function AdminEstadisticasPage({ params }: AdminEstadisticasPageProps) {
-  const clubId = params.then((p) => p.clubId);
+  const [clubId, setClubId] = useState<string | null>(null);
+
+  useEffect(() => {
+    params.then((p) => setClubId(p.clubId));
+  }, [params]);
+
+  if (!clubId) return null;
 
   return (
     <div className="flex flex-col min-h-screen">
-      <AdminNav clubId={clubId as unknown as string} />
+      <AdminNav clubId={clubId} />
       <div className="container mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold mb-2">Estadísticas</h1>
         <p className="text-muted-foreground mb-8">
