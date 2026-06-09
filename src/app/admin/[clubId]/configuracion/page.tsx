@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useClub } from "@/hooks/useFirestore";
-import { updateClub } from "@/lib/firebase/admin-fns";
+import { updateClub, uploadFile } from "@/lib/firebase/admin-fns";
 import { toast } from "sonner";
 
 type AdminConfigPageProps = {
@@ -29,6 +29,7 @@ export default function AdminConfigPage({ params }: AdminConfigPageProps) {
 function AdminConfigForm({ clubId }: { clubId: string }) {
   const { data: club, refetch } = useClub(clubId);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -64,6 +65,21 @@ function AdminConfigForm({ clubId }: { clubId: string }) {
       });
     }
   }, [club]);
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !clubId) return;
+    setUploading(true);
+    try {
+      const url = await uploadFile(`clubs/${clubId}/logo-${Date.now()}`, file);
+      setForm((prev) => ({ ...prev, logo: url }));
+      toast.success("Logo subido");
+    } catch {
+      toast.error("Error al subir logo");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,8 +173,22 @@ function AdminConfigForm({ clubId }: { clubId: string }) {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label>URL del Logo</Label>
-                <Input value={form.logo} onChange={(e) => setForm({ ...form, logo: e.target.value })} placeholder="https://ejemplo.com/logo.png" />
+                <Label>Logo del Club</Label>
+                <div className="flex gap-2">
+                  <Input value={form.logo} onChange={(e) => setForm({ ...form, logo: e.target.value })} placeholder="URL del logo" />
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                      disabled={uploading}
+                    />
+                    <Button type="button" variant="outline" disabled={uploading} className="relative pointer-events-none">
+                      {uploading ? "Subiendo..." : "Subir"}
+                    </Button>
+                  </div>
+                </div>
                 {form.logo && (
                   <img src={form.logo} alt="Preview" className="w-16 h-16 rounded-full object-cover mt-2" />
                 )}
