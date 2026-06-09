@@ -19,10 +19,22 @@ type AdminNoticiasPageProps = {
   params: Promise<{ clubId: string }>;
 };
 
+type SocialPost = {
+  id: string;
+  source: "facebook" | "instagram";
+  text: string;
+  image?: string;
+  url: string;
+  createdAt: string;
+};
+
 export default function AdminNoticiasPage({ params }: AdminNoticiasPageProps) {
   const [clubId, setClubId] = useState<string | null>(null);
   const [news, setNews] = useState<News[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [socialDialogOpen, setSocialDialogOpen] = useState(false);
+  const [socialPosts, setSocialPosts] = useState<SocialPost[]>([]);
+  const [loadingSocial, setLoadingSocial] = useState(false);
   const [editingNews, setEditingNews] = useState<News | null>(null);
   const [form, setForm] = useState({ title: "", excerpt: "", content: "", author: "", coverImage: "", published: false });
   const [loading, setLoading] = useState(false);
@@ -79,6 +91,43 @@ export default function AdminNoticiasPage({ params }: AdminNoticiasPageProps) {
     await loadNews(clubId!);
   };
 
+  const openSocialImport = async () => {
+    if (!clubId) return;
+    setLoadingSocial(true);
+    setSocialDialogOpen(true);
+    try {
+      const res = await fetch(`/api/clubs/${clubId}/social-posts`);
+      const data = await res.json();
+      setSocialPosts(data.posts ?? []);
+    } catch {
+      toast.error("Error al cargar publicaciones");
+      setSocialPosts([]);
+    } finally {
+      setLoadingSocial(false);
+    }
+  };
+
+  const importPost = async (post: SocialPost) => {
+    if (!clubId) return;
+    try {
+      const title = post.text.slice(0, 80) + (post.text.length > 80 ? "..." : "");
+      await createNews(clubId, {
+        title: title || `Publicación de ${post.source === "facebook" ? "Facebook" : "Instagram"}`,
+        content: post.text,
+        excerpt: post.text.slice(0, 160),
+        coverImage: post.image ?? "",
+        author: post.source === "facebook" ? "Facebook" : "Instagram",
+        published: true,
+        tags: [post.source],
+      });
+      toast.success("Publicación importada como noticia");
+      setSocialPosts((prev) => prev.filter((p) => p.id !== post.id));
+      await loadNews(clubId);
+    } catch {
+      toast.error("Error al importar");
+    }
+  };
+
   const columns = [
     { key: "title", header: "Título", render: (n: News) => <span className="font-medium">{n.title}</span> },
     { key: "author", header: "Autor", render: (n: News) => n.author },
@@ -101,7 +150,12 @@ export default function AdminNoticiasPage({ params }: AdminNoticiasPageProps) {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">Noticias</h1>
-          <Button onClick={openCreate}>+ Nueva Noticia</Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={openSocialImport}>
+              + Importar de Redes
+            </Button>
+            <Button onClick={openCreate}>+ Nueva Noticia</Button>
+          </div>
         </div>
 
         <DataTable columns={columns} data={news} keyExtractor={(n) => n.id} onEdit={openEdit} onDelete={handleDelete} />
@@ -144,6 +198,56 @@ export default function AdminNoticiasPage({ params }: AdminNoticiasPageProps) {
                 <Button type="submit" disabled={loading}>{loading ? "Guardando..." : "Guardar"}</Button>
               </div>
             </form>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={socialDialogOpen} onOpenChange={setSocialDialogOpen}>
+          <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Importar de Redes Sociales</DialogTitle>
+              <DialogDescription>
+                Publicaciones recientes de Facebook e Instagram. Haz clic en una para importarla como noticia.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3">
+              {loadingSocial && (
+                <p className="text-muted-foreground text-center py-8">Cargando publicaciones...</p>
+              )}
+              {!loadingSocial && socialPosts.length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground mb-2">No hay publicaciones disponibles</p>
+                  <p className="text-xs text-muted-foreground">
+                    Configura el Access Token de Facebook en Configuración → Redes Sociales
+                  </p>
+                </div>
+              )}
+              {socialPosts.map((post) => (
+                <div
+                  key={post.id}
+                  className="flex gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer"
+                  onClick={() => importPost(post)}
+                >
+                  {post.image && (
+                    <img
+                      src={post.image}
+                      alt=""
+                      className="w-20 h-20 rounded object-cover shrink-0"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Badge variant="outline" className="text-xs">
+                        {post.source === "facebook" ? "Facebook" : "Instagram"}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(post.createdAt).toLocaleDateString("es-CL")}
+                      </span>
+                    </div>
+                    <p className="text-sm line-clamp-3">{post.text || "Sin texto"}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </DialogContent>
         </Dialog>
       </div>

@@ -20,6 +20,11 @@ export type Club = {
     primary: string;
     secondary: string;
   };
+  social?: {
+    facebookPageId?: string;
+    facebookAccessToken?: string;
+    instagramBusinessId?: string;
+  };
   customDomain?: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;

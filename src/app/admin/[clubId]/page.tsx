@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getClubBySlug, getTeamStats, getActivePlayers, getMatches, getMembers, getNews, getProducts, getSponsors } from "@/lib/firebase/firestore";
+import Image from "next/image";
 
 export default async function AdminDashboard({
   params,
@@ -23,40 +24,56 @@ export default async function AdminDashboard({
       getSponsors(club.id),
     ]);
 
+  const primary = club.colors.primary ?? "#0891b2";
+  const secondary = club.colors.secondary ?? "#059669";
+
   const kpis = [
-    { title: "Socios", value: members.length, icon: "🤝" },
-    { title: "Jugadores", value: players.length, icon: "🏃" },
-    { title: "Partidos", value: matches.length, icon: "⚡" },
-    { title: "Productos", value: products.length, icon: "🛒" },
-    { title: "Noticias", value: news.length, icon: "📰" },
-    { title: "Auspiciadores", value: sponsors.length, icon: "🏢" },
+    { title: "Socios", value: members.length, icon: "🤝", color: primary },
+    { title: "Jugadores", value: players.length, icon: "🏃", color: secondary },
+    { title: "Partidos", value: matches.length, icon: "⚡", color: primary },
+    { title: "Productos", value: products.length, icon: "🛒", color: secondary },
+    { title: "Noticias", value: news.length, icon: "📰", color: primary },
+    { title: "Auspiciadores", value: sponsors.length, icon: "🏢", color: secondary },
     {
       title: "Victorias",
       value: teamStats?.wins ?? 0,
       icon: "🏆",
+      color: secondary,
       description: `Temporada ${teamStats?.season ?? "—"}`,
     },
     {
       title: "Posición",
       value: `#${teamStats?.position ?? "—"}`,
       icon: "📊",
+      color: primary,
     },
   ];
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-gray-50/50">
       <AdminNav clubId={clubId} />
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4 mb-8">
+          {club.logo && (
+            <Image
+              src={club.logo}
+              alt={club.name}
+              width={56}
+              height={56}
+              className="rounded-xl object-cover"
+            />
+          )}
           <div>
-            <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground">{club.name}</p>
+            <h1 className="text-3xl font-bold" style={{ color: primary }}>
+              {club.name}
+            </h1>
+            <p className="text-muted-foreground">Panel de Administración</p>
           </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
           {kpis.map((kpi) => (
-            <Card key={kpi.title}>
+            <Card key={kpi.title} className="border-l-4" style={{ borderLeftColor: kpi.color }}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   {kpi.title}
@@ -78,30 +95,34 @@ export default async function AdminDashboard({
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Accesos Rápidos</CardTitle>
+              <CardTitle style={{ color: primary }}>Accesos Rápidos</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <a
                 href={`/admin/${clubId}/jugadores`}
                 className="block p-3 rounded-lg hover:bg-muted transition-colors text-sm font-medium"
+                style={{ borderLeft: `3px solid ${primary}`, paddingLeft: "12px" }}
               >
                 ➕ Agregar jugador
               </a>
               <a
                 href={`/admin/${clubId}/partidos`}
                 className="block p-3 rounded-lg hover:bg-muted transition-colors text-sm font-medium"
+                style={{ borderLeft: `3px solid ${secondary}`, paddingLeft: "12px" }}
               >
                 ➕ Crear partido
               </a>
               <a
                 href={`/admin/${clubId}/noticias`}
                 className="block p-3 rounded-lg hover:bg-muted transition-colors text-sm font-medium"
+                style={{ borderLeft: `3px solid ${primary}`, paddingLeft: "12px" }}
               >
                 📝 Publicar noticia
               </a>
               <a
                 href={`/admin/${clubId}/socios`}
                 className="block p-3 rounded-lg hover:bg-muted transition-colors text-sm font-medium"
+                style={{ borderLeft: `3px solid ${secondary}`, paddingLeft: "12px" }}
               >
                 👥 Ver socios
               </a>
@@ -111,7 +132,7 @@ export default async function AdminDashboard({
           {teamStats && (
             <Card>
               <CardHeader>
-                <CardTitle>Rendimiento del Equipo</CardTitle>
+                <CardTitle style={{ color: primary }}>Rendimiento del Equipo</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -122,13 +143,14 @@ export default async function AdminDashboard({
                     </div>
                     <div className="h-2 bg-muted rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-green-500 rounded-full"
+                        className="h-full rounded-full"
                         style={{
                           width: `${
                             teamStats.wins + teamStats.losses > 0
                               ? (teamStats.wins / (teamStats.wins + teamStats.losses)) * 100
                               : 0
                           }%`,
+                          backgroundColor: secondary,
                         }}
                       />
                     </div>
@@ -140,13 +162,14 @@ export default async function AdminDashboard({
                     </div>
                     <div className="h-2 bg-muted rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-red-500 rounded-full"
+                        className="h-full rounded-full"
                         style={{
                           width: `${
                             teamStats.wins + teamStats.losses > 0
                               ? (teamStats.losses / (teamStats.wins + teamStats.losses)) * 100
                               : 0
                           }%`,
+                          backgroundColor: "#ef4444",
                         }}
                       />
                     </div>

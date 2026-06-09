@@ -10,6 +10,7 @@ import {
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { db, storage } from "@/lib/firebase/client";
 import type {
+  Club,
   Player,
   Match,
   News,
@@ -287,6 +288,15 @@ export async function createAchievement(
 export async function deleteAchievement(id: string) {
   const dbInstance = await getDb();
   await deleteDoc(doc(dbInstance, "achievements", id));
+}
+
+// ---- Clubs ----
+export async function updateClub(id: string, data: Partial<Club>) {
+  const dbInstance = await getDb();
+  await updateDoc(doc(dbInstance, "clubs", id), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
 }
 
 // ---- Upload ----

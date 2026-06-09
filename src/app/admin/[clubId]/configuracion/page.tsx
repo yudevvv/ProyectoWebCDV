@@ -1,0 +1,260 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { AdminNav } from "@/components/admin/AdminNav";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useClub } from "@/hooks/useFirestore";
+import { updateClub } from "@/lib/firebase/admin-fns";
+import { toast } from "sonner";
+
+type AdminConfigPageProps = {
+  params: Promise<{ clubId: string }>;
+};
+
+export default function AdminConfigPage({ params }: AdminConfigPageProps) {
+  const [clubId, setClubId] = useState<string | null>(null);
+
+  useEffect(() => {
+    params.then((p) => setClubId(p.clubId));
+  }, [params]);
+
+  if (!clubId) return <div className="flex flex-col min-h-screen"><AdminNav clubId="" /><div className="container mx-auto px-4 py-12"><p className="text-muted-foreground">Cargando...</p></div></div>;
+
+  return <AdminConfigForm clubId={clubId} />;
+}
+
+function AdminConfigForm({ clubId }: { clubId: string }) {
+  const { data: club, refetch } = useClub(clubId);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    description: "",
+    email: "",
+    phone: "",
+    whatsapp: "",
+    instagram: "",
+    facebook: "",
+    logo: "",
+    primaryColor: "#0891b2",
+    secondaryColor: "#059669",
+    facebookPageId: "",
+    facebookAccessToken: "",
+    instagramBusinessId: "",
+  });
+
+  useEffect(() => {
+    if (club) {
+      setForm({
+        name: club.name,
+        description: club.description,
+        email: club.email,
+        phone: club.phone,
+        whatsapp: club.whatsapp,
+        instagram: club.instagram,
+        facebook: club.facebook,
+        logo: club.logo,
+        primaryColor: club.colors.primary,
+        secondaryColor: club.colors.secondary,
+        facebookPageId: club.social?.facebookPageId ?? "",
+        facebookAccessToken: club.social?.facebookAccessToken ?? "",
+        instagramBusinessId: club.social?.instagramBusinessId ?? "",
+      });
+    }
+  }, [club]);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!club) return;
+    setSaving(true);
+    try {
+      await updateClub(club.id, {
+        name: form.name,
+        description: form.description,
+        email: form.email,
+        phone: form.phone,
+        whatsapp: form.whatsapp,
+        instagram: form.instagram,
+        facebook: form.facebook,
+        logo: form.logo,
+        colors: {
+          primary: form.primaryColor,
+          secondary: form.secondaryColor,
+        },
+        social: {
+          facebookPageId: form.facebookPageId || undefined,
+          facebookAccessToken: form.facebookAccessToken || undefined,
+          instagramBusinessId: form.instagramBusinessId || undefined,
+        },
+      });
+      toast.success("Configuración guardada");
+      refetch();
+    } catch {
+      toast.error("Error al guardar");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!club) return <div className="flex flex-col min-h-screen"><AdminNav clubId={clubId} /><div className="container mx-auto px-4 py-12"><p className="text-muted-foreground">Cargando...</p></div></div>;
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <AdminNav clubId={clubId} />
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-2">Configuración</h1>
+        <p className="text-muted-foreground mb-8">
+          Personaliza la apariencia y conecta tus redes sociales
+        </p>
+
+        <form onSubmit={handleSave} className="space-y-8 max-w-2xl">
+          <Card>
+            <CardHeader>
+              <CardTitle>Información del Club</CardTitle>
+              <CardDescription>
+                Datos básicos que se muestran en la página pública
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Nombre del Club</Label>
+                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+              </div>
+              <div className="space-y-2">
+                <Label>Descripción</Label>
+                <textarea
+                  className="flex min-h-[80px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Email</Label>
+                  <Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Teléfono</Label>
+                  <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>WhatsApp</Label>
+                <Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} placeholder="+56912345678" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Logo y Apariencia</CardTitle>
+              <CardDescription>
+                El logo se muestra en el panel y en la página del club. Los colores personalizan toda la interfaz.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>URL del Logo</Label>
+                <Input value={form.logo} onChange={(e) => setForm({ ...form, logo: e.target.value })} placeholder="https://ejemplo.com/logo.png" />
+                {form.logo && (
+                  <img src={form.logo} alt="Preview" className="w-16 h-16 rounded-full object-cover mt-2" />
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Color Primario</Label>
+                  <div className="flex gap-2">
+                    <input
+                      type="color"
+                      value={form.primaryColor}
+                      onChange={(e) => setForm({ ...form, primaryColor: e.target.value })}
+                      className="w-10 h-10 rounded cursor-pointer border"
+                    />
+                    <Input value={form.primaryColor} onChange={(e) => setForm({ ...form, primaryColor: e.target.value })} />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Color Secundario</Label>
+                  <div className="flex gap-2">
+                    <input
+                      type="color"
+                      value={form.secondaryColor}
+                      onChange={(e) => setForm({ ...form, secondaryColor: e.target.value })}
+                      className="w-10 h-10 rounded cursor-pointer border"
+                    />
+                    <Input value={form.secondaryColor} onChange={(e) => setForm({ ...form, secondaryColor: e.target.value })} />
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 mt-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Vista previa:</span>
+                  <span
+                    className="px-3 py-1 rounded-full text-white text-xs font-medium"
+                    style={{ backgroundColor: form.primaryColor }}
+                  >
+                    Primario
+                  </span>
+                  <span
+                    className="px-3 py-1 rounded-full text-white text-xs font-medium"
+                    style={{ backgroundColor: form.secondaryColor }}
+                  >
+                    Secundario
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Redes Sociales</CardTitle>
+              <CardDescription>
+                Conecta Facebook e Instagram para importar publicaciones como noticias automáticamente.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>URL de Instagram</Label>
+                <Input value={form.instagram} onChange={(e) => setForm({ ...form, instagram: e.target.value })} placeholder="https://instagram.com/tuclub" />
+              </div>
+              <div className="space-y-2">
+                <Label>URL de Facebook</Label>
+                <Input value={form.facebook} onChange={(e) => setForm({ ...form, facebook: e.target.value })} placeholder="https://facebook.com/tuclub" />
+              </div>
+              <div className="border-t pt-4 mt-4">
+                <p className="text-sm font-medium mb-2">Integración API (opcional)</p>
+                <p className="text-xs text-muted-foreground mb-4">
+                  Para sincronizar publicaciones automáticamente, necesitas una App de Facebook y un Token de Acceso. 
+                  Sin estos datos, las redes se muestran como enlaces.
+                </p>
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <Label>Facebook Page ID</Label>
+                    <Input value={form.facebookPageId} onChange={(e) => setForm({ ...form, facebookPageId: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Facebook Access Token</Label>
+                    <Input value={form.facebookAccessToken} onChange={(e) => setForm({ ...form, facebookAccessToken: e.target.value })} type="password" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Instagram Business ID</Label>
+                    <Input value={form.instagramBusinessId} onChange={(e) => setForm({ ...form, instagramBusinessId: e.target.value })} />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="flex justify-end gap-3 pb-12">
+            <Button type="submit" disabled={saving} size="lg">
+              {saving ? "Guardando..." : "Guardar Configuración"}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
