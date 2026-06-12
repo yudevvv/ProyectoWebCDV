@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, use } from "react";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { DataTable } from "@/components/admin/DataTable";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import type { Member, Payment } from "@/types";
 import { Timestamp } from "firebase/firestore";
 import { toast } from "sonner";
 import { useDemoMode } from "@/lib/demo-mode";
-import { FileDown, Plus, DollarSign, History, AlertTriangle, UserCheck, UserX, Calendar } from "lucide-react";
+import { FileDown, Plus, DollarSign, History, AlertTriangle, UserCheck, UserX, Calendar, Pencil, Trash2 } from "lucide-react";
 
 const statusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
@@ -30,6 +30,13 @@ const paymentMethodLabels: Record<string, string> = {
   tarjeta: "Tarjeta",
   otro: "Otro",
 };
+
+const PAYMENT_METHODS = [
+  { value: "transferencia", label: "Transferencia" },
+  { value: "efectivo", label: "Efectivo" },
+  { value: "tarjeta", label: "Tarjeta" },
+  { value: "otro", label: "Otro" },
+] as const;
 
 function dateToTimestamp(dateStr: string) {
   if (!dateStr) return undefined;
@@ -56,6 +63,12 @@ function addMonths(date: Date, months: number) {
   return d;
 }
 
+function cleanPayload<T extends Record<string, unknown>>(obj: T): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([, v]) => v !== undefined)
+  ) as Partial<T>;
+}
+
 type MemberFormData = {
   name: string;
   rut: string;
@@ -79,8 +92,9 @@ type AdminSociosPageProps = {
 };
 
 export default function AdminSociosPage({ params }: AdminSociosPageProps) {
-  const [clubId, setClubId] = useState<string | null>(null);
+  const { clubId } = use(params);
   const [members, setMembers] = useState<Member[]>([]);
+  const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
@@ -94,39 +108,38 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
   const [historyMember, setHistoryMember] = useState<Member | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loadingPayments, setLoadingPayments] = useState(false);
-  const { isDemo } = useDemoMode(clubId ?? "");
-  const { data: club } = useClub(clubId ?? "");
+  const [saving, setSaving] = useState(false);
+  const { isDemo } = useDemoMode(clubId);
+  const { data: club } = useClub(clubId);
 
-  const loadMembers = useCallback(async (id: string) => {
+  const refreshMembers = useCallback(async (id: string) => {
     const data = await getMembers(id);
     setMembers(data);
   }, []);
 
   useEffect(() => {
-    params.then((p) => {
-      setClubId(p.clubId);
-      loadMembers(p.clubId);
+    getMembers(clubId).then((data) => {
+      setMembers(data);
+      setLoading(false);
     });
-  }, [params, loadMembers]);
+  }, [clubId]);
 
   const today = new Date();
+
+  const overdueMembers = members.filter((m) => {
+    if (!m.endDate || m.status !== "approved") return false;
+    return new Date(m.endDate.seconds * 1000) < today;
+  });
 
   const expiringMembers = members.filter((m) => {
     if (!m.endDate || m.status !== "approved") return false;
     const end = new Date(m.endDate.seconds * 1000);
     const diff = (end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
-    return diff <= 30;
-  });
-
-  const overdueMembers = members.filter((m) => {
-    if (!m.endDate || m.status !== "approved") return false;
-    const end = new Date(m.endDate.seconds * 1000);
-    return end < today;
+    return diff > 0 && diff <= 30;
   });
 
   const totalMonthly = members.reduce((sum, m) => sum + (m.status === "approved" ? m.monthlyAmount : 0), 0);
   const totalPaid = members.reduce((sum, m) => sum + (m.totalPaid || 0), 0);
-  const totalPending = Math.max(0, totalMonthly - (members.reduce((sum, m) => sum + (m.lastPaymentDate ? m.monthlyAmount : 0), 0)));
   const activeMembers = members.filter((m) => m.status === "approved").length;
 
   const validateForm = (): boolean => {
@@ -134,95 +147,152 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
     if (!form.name.trim()) errors.name = "Nombre requerido";
     if (!form.rut.trim()) errors.rut = "RUT requerido";
     else if (!/^[0-9]{1,2}\.[0-9]{3}\.[0-9]{3}[-][0-9kK]$/.test(form.rut) && !/^[0-9]{7,8}[-][0-9kK]$/.test(form.rut))
-      errors.rut = "Formato RUT inválido (ej: 12.345.678-9)";
+      errors.rut = "Formato inválido (ej: 12.345.678-9)";
     if (!form.email.trim()) errors.email = "Email requerido";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errors.email = "Email inválido";
     if (!form.phone.trim()) errors.phone = "Teléfono requerido";
-    if (form.monthlyAmount <= 0) errors.monthlyAmount = "Aporte debe ser > 0";
+    if (form.monthlyAmount <= 0) errors.monthlyAmount = "Debe ser > 0";
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const handleStartDateChange = (val: string) => {
-    setForm({ ...form, startDate: val, endDate: val ? timestampToDateStr(Timestamp.fromDate(addMonths(new Date(val), 1))) : "" });
+    setForm({
+      ...form,
+      startDate: val,
+      endDate: val ? timestampToDateStr(Timestamp.fromDate(addMonths(new Date(val), 1))) : "",
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!clubId) return;
     if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     if (!validateForm()) return;
 
-    const payload = {
+    const payload = cleanPayload({
       name: form.name,
       rut: form.rut,
       email: form.email,
       phone: form.phone,
       membershipType: form.membershipType as Member["membershipType"],
       monthlyAmount: form.monthlyAmount,
-      address: form.address,
-      notes: form.notes,
-      startDate: dateToTimestamp(form.startDate) as Timestamp,
-      endDate: form.endDate ? (dateToTimestamp(form.endDate) as Timestamp) : undefined,
-    };
+      address: form.address || undefined,
+      notes: form.notes || undefined,
+      startDate: dateToTimestamp(form.startDate),
+      endDate: dateToTimestamp(form.endDate),
+    });
 
+    setSaving(true);
     try {
       if (editingMember) {
-        await updateMember(editingMember.id, payload);
+        await updateMember(editingMember.id, payload as Partial<Member>);
         toast.success("Socio actualizado");
       } else {
-        await createMember(clubId, payload);
+        await createMember(clubId, payload as Parameters<typeof createMember>[1]);
         toast.success("Socio agregado");
       }
       setDialogOpen(false);
       setEditingMember(null);
       setForm(defaultForm);
       setFormErrors({});
-      await loadMembers(clubId);
-    } catch { toast.error("Error al guardar"); }
+      await refreshMembers(clubId);
+    } catch (e) {
+      console.error("Error al guardar socio:", e);
+      toast.error("Error al guardar. Revisa que todos los campos sean válidos.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async (member: Member) => {
     if (!confirm("¿Eliminar socio?")) return;
     if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
-    await deleteMember(member.id);
-    toast.success("Socio eliminado");
-    await loadMembers(clubId!);
+    try {
+      await deleteMember(member.id);
+      toast.success("Socio eliminado");
+      await refreshMembers(clubId);
+    } catch (e) {
+      console.error("Error al eliminar:", e);
+      toast.error("Error al eliminar");
+    }
   };
 
   const handleStatusChange = async (member: Member) => {
+    if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     const newStatus = member.status === "approved" ? "inactive" : "approved";
-    await updateMember(member.id, { status: newStatus as Member["status"] });
-    toast.success(`Estado cambiado a ${newStatus === "approved" ? "Activo" : "Inactivo"}`);
-    await loadMembers(clubId!);
+    try {
+      await updateMember(member.id, { status: newStatus as Member["status"] });
+      toast.success(`Estado cambiado a ${newStatus === "approved" ? "Activo" : "Inactivo"}`);
+      await refreshMembers(clubId);
+    } catch (e) {
+      console.error("Error al cambiar estado:", e);
+      toast.error("Error al cambiar estado");
+    }
   };
 
   const handleRegisterPayment = async () => {
-    if (!paymentMember || !clubId) return;
+    if (!paymentMember) return;
     if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     if (paymentAmount <= 0) { toast.error("Ingresa un monto válido"); return; }
+
+    const monthsPaid = Math.floor(paymentAmount / paymentMember.monthlyAmount);
+    const remaining = paymentAmount % paymentMember.monthlyAmount;
+
     try {
       const now = Timestamp.now();
+      const nowDate = new Date();
+
+      let newEndDate: Date;
+      const currentEndDate = paymentMember.endDate
+        ? new Date(paymentMember.endDate.seconds * 1000)
+        : null;
+
+      if (monthsPaid >= 1) {
+        const baseDate = currentEndDate && currentEndDate > nowDate
+          ? currentEndDate
+          : nowDate;
+        newEndDate = addMonths(baseDate, monthsPaid);
+      } else {
+        newEndDate = currentEndDate || nowDate;
+      }
+
+      const nextDue = addMonths(nowDate, 1);
+
       await createPayment(paymentMember.id, clubId, {
         amount: paymentAmount,
         paymentMethod,
         notes: paymentNotes,
-        periodStart: paymentMember.nextDueDate ? undefined : paymentMember.startDate,
-        periodEnd: paymentMember.nextDueDate ? undefined : undefined,
       });
-      await updateMember(paymentMember.id, {
+
+      const updateData = cleanPayload({
         totalPaid: (paymentMember.totalPaid || 0) + paymentAmount,
         lastPayment: now,
         lastPaymentDate: now,
-        nextDueDate: Timestamp.fromDate(addMonths(new Date(), 1)),
+        nextDueDate: Timestamp.fromDate(nextDue),
+        endDate: monthsPaid >= 1
+          ? Timestamp.fromDate(newEndDate)
+          : paymentMember.endDate,
+        ...(paymentMember.status === "approved" && paymentMember.endDate && new Date(paymentMember.endDate.seconds * 1000) < nowDate
+          ? { status: "approved" as const }
+          : {}),
       });
-      toast.success("Pago registrado");
+
+      await updateMember(paymentMember.id, updateData as Partial<Member>);
+
+      const msg = monthsPaid >= 1
+        ? `Pago registrado · ${monthsPaid} mes${monthsPaid > 1 ? "es" : ""}${remaining > 0 ? ` · ${formatCurrency(remaining)} a favor` : ""}`
+        : "Pago registrado";
+      toast.success(msg);
+
       setPaymentDialogOpen(false);
       setPaymentAmount(0);
       setPaymentMethod("transferencia");
       setPaymentNotes("");
-      await loadMembers(clubId);
-    } catch { toast.error("Error al registrar pago"); }
+      await refreshMembers(clubId);
+    } catch (e) {
+      console.error("Error al registrar pago:", e);
+      toast.error("Error al registrar pago");
+    }
   };
 
   const loadPaymentHistory = async (member: Member) => {
@@ -250,7 +320,7 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
     doc.setFontSize(12);
     doc.text(`Club: ${club.name}`, 105, 50, { align: "center" });
     doc.setFontSize(10);
-    doc.text(`Generado: ${new Date().toLocaleDateString("es-CL")}`, 105, 57, { align: "center" });
+    doc.text(`Generado: ${today.toLocaleDateString("es-CL")}`, 105, 57, { align: "center" });
     doc.text(`Total socios activos: ${activeMembers}`, 105, 64, { align: "center" });
     doc.text(`Aporte mensual total: ${formatCurrency(totalMonthly)}`, 105, 71, { align: "center" });
     doc.text(`Total recaudado: ${formatCurrency(totalPaid)}`, 105, 78, { align: "center" });
@@ -258,7 +328,7 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
 
     let y = 98;
     doc.setFontSize(7);
-    const colWidths = [38, 22, 18, 18, 18, 18, 18, 18, 18];
+    const colWidths = [38, 22, 18, 18, 14, 16, 16, 18, 18];
     const headers = ["Nombre", "RUT", "Email", "Teléfono", "Tipo", "Mensual", "Pagado", "Inicio", "Estado"];
     let x = 10;
     headers.forEach((h, i) => {
@@ -279,13 +349,21 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
         m.startDate ? formatDate(m.startDate) : "—",
         m.status === "approved" ? "Activo" : m.status,
       ];
-      vals.forEach((v, i) => {
+      vals.forEach((v) => {
         doc.text(v, x + 1, y);
-        x += colWidths[i];
+        x += 18;
       });
       y += 5;
     }
     doc.save(`socios-${club.slug}.pdf`);
+  };
+
+  const isOverdue = (m: Member) => m.endDate && new Date(m.endDate.seconds * 1000) < new Date();
+  const isExpiringSoon = (m: Member) => {
+    if (!m.endDate) return false;
+    const end = new Date(m.endDate.seconds * 1000);
+    const diff = (end.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24);
+    return diff > 0 && diff <= 7;
   };
 
   const columns = [
@@ -295,11 +373,20 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
       render: (m: Member) => (
         <div className="flex flex-col">
           <span className="font-medium">{m.name}</span>
-          <span className="text-xs text-muted-foreground">{m.email}</span>
+          <span className="text-xs text-muted-foreground">{m.rut}</span>
         </div>
       ),
     },
-    { key: "rut", header: "RUT", render: (m: Member) => <span className="text-sm">{m.rut}</span> },
+    {
+      key: "contact",
+      header: "Contacto",
+      render: (m: Member) => (
+        <div className="flex flex-col text-xs text-muted-foreground">
+          <span>{m.email}</span>
+          <span>{m.phone || "—"}</span>
+        </div>
+      ),
+    },
     {
       key: "monthly",
       header: "Aporte",
@@ -321,6 +408,7 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
         const start = m.startDate ? new Date(m.startDate.seconds * 1000) : null;
         const end = m.endDate ? new Date(m.endDate.seconds * 1000) : null;
         const now = new Date();
+        const overdue = end && end < now;
         let pct = 0;
         if (start && end) {
           const total = end.getTime() - start.getTime();
@@ -328,17 +416,20 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
           pct = Math.min(100, Math.max(0, (elapsed / total) * 100));
         }
         return (
-          <div className="flex flex-col gap-1 min-w-[120px]">
+          <div className="flex flex-col gap-1 min-w-[130px]">
             <span className="text-xs text-muted-foreground">
               {formatDate(m.startDate)} → {m.endDate ? formatDate(m.endDate) : "∞"}
             </span>
             {m.endDate && (
-              <div className="h-1.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all ${pct >= 100 ? "bg-red-500" : pct >= 80 ? "bg-amber-400" : "bg-emerald-400"}`}
-                  style={{ width: `${pct}%` }}
+                  className={`h-full rounded-full transition-all ${overdue ? "bg-red-500" : pct >= 80 ? "bg-amber-400" : "bg-emerald-400"}`}
+                  style={{ width: `${overdue ? 100 : pct}%` }}
                 />
               </div>
+            )}
+            {overdue && (
+              <span className="text-xs text-red-500 dark:text-red-400 font-medium">Vencido</span>
             )}
           </div>
         );
@@ -347,118 +438,81 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
     {
       key: "status",
       header: "Estado",
-      render: (m: Member) => {
-        const hasExpired = m.endDate && new Date(m.endDate.seconds * 1000) < new Date();
-        const isExpiring = m.endDate && !hasExpired && (new Date(m.endDate.seconds * 1000).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24) <= 7;
-        return (
-          <div className="flex items-center gap-2">
-            <button onClick={() => handleStatusChange(m)}>
-              <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[m.status]}`}>
-                {m.status === "approved" ? <UserCheck className="h-3 w-3" /> : <UserX className="h-3 w-3" />}
-                {m.status === "approved" ? "Activo" : m.status === "inactive" ? "Inactivo" : m.status}
-              </span>
-            </button>
-            {hasExpired && m.status === "approved" && (
-              <span className="inline-flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
-                <AlertTriangle className="h-3 w-3" /> Vencido
-              </span>
-            )}
-            {isExpiring && m.status === "approved" && (
-              <span className="inline-flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
-                <Calendar className="h-3 w-3" /> Próximo a vencer
-              </span>
-            )}
-          </div>
-        );
-      },
+      render: (m: Member) => (
+        <button
+          onClick={() => handleStatusChange(m)}
+          className="hover:opacity-80 transition-opacity"
+          title="Cambiar estado"
+        >
+          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[m.status]}`}>
+            {m.status === "approved" ? <UserCheck className="h-3 w-3" /> : <UserX className="h-3 w-3" />}
+            {m.status === "approved" ? "Activo" : m.status === "inactive" ? "Inactivo" : m.status}
+          </span>
+        </button>
+      ),
     },
     {
       key: "type",
       header: "Tipo",
       render: (m: Member) => (
-        <span className="text-xs capitalize">{m.membershipType}</span>
+        <span className="text-xs capitalize text-muted-foreground">{m.membershipType}</span>
       ),
+    },
+    {
+      key: "alerts",
+      header: "",
+      render: (m: Member) => {
+        const overdue = isOverdue(m);
+        const expiring = isExpiringSoon(m);
+        if (!overdue && !expiring) return null;
+        return (
+          <span title={overdue ? "Vencido" : "Próximo a vencer"}>
+            {overdue ? (
+              <AlertTriangle className="h-4 w-4 text-red-500" />
+            ) : (
+              <Calendar className="h-4 w-4 text-amber-500" />
+            )}
+          </span>
+        );
+      },
     },
   ];
 
-  if (!clubId) return <div className="flex flex-col min-h-screen"><AdminNav clubId="" /><div className="container mx-auto px-4 py-12"><p className="text-muted-foreground">Cargando...</p></div></div>;
-
-  return (
-    <div className="flex flex-col min-h-screen">
-      <AdminNav clubId={clubId} />
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-cyan-600">Socios</h1>
-            <p className="text-muted-foreground text-sm">{members.length} registrados, {activeMembers} activos</p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={downloadPDF} disabled={members.length === 0}>
-              <FileDown className="h-4 w-4 mr-1" /> Reporte
-            </Button>
-            <Button onClick={() => { setEditingMember(null); setForm(defaultForm); setFormErrors({}); setDialogOpen(true); }} disabled={isDemo}>
-              <Plus className="h-4 w-4 mr-1" /> Socio
-            </Button>
-          </div>
-        </div>
-
-        {(overdueMembers.length > 0 || expiringMembers.length > 0) && (
-          <div className="mb-6 space-y-2">
-            {overdueMembers.length > 0 && (
-              <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/50 px-4 py-3 text-sm text-red-700 dark:text-red-300">
-                <AlertTriangle className="h-5 w-5 shrink-0" />
-                <span><strong>{overdueMembers.length}</strong> socio{overdueMembers.length > 1 ? "s" : ""} con membresía vencida</span>
-              </div>
-            )}
-            {expiringMembers.length > 0 && overdueMembers.length === 0 && (
-              <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/50 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
-                <Calendar className="h-5 w-5 shrink-0" />
-                <span><strong>{expiringMembers.length}</strong> socio{expiringMembers.length > 1 ? "s" : ""} próximo{expiringMembers.length > 1 ? "s" : ""} a vencer (próximos 30 días)</span>
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className="grid gap-4 sm:grid-cols-4 mb-6">
-          <div className="rounded-lg border bg-card p-4">
-            <p className="text-sm text-muted-foreground">Aporte mensual total</p>
-            <p className="text-2xl font-bold text-cyan-600">{formatCurrency(totalMonthly)}</p>
-          </div>
-          <div className="rounded-lg border bg-card p-4">
-            <p className="text-sm text-muted-foreground">Total recaudado</p>
-            <p className="text-2xl font-bold text-cyan-600">{formatCurrency(totalPaid)}</p>
-          </div>
-          <div className="rounded-lg border bg-card p-4">
-            <p className="text-sm text-muted-foreground">Socios activos</p>
-            <p className="text-2xl font-bold text-cyan-600">{activeMembers}</p>
-          </div>
-          <div className="rounded-lg border bg-card p-4">
-            <p className="text-sm text-muted-foreground">Pendiente este mes</p>
-            <p className="text-2xl font-bold text-amber-600">{formatCurrency(totalPending)}</p>
-          </div>
-        </div>
-
-        <DataTable
-          columns={[
-            ...columns,
-            {
-              key: "actions",
-              header: "Acciones",
-              render: (m: Member) => (
-                <div className="flex items-center gap-1">
-                  <Button size="sm" variant="ghost" onClick={() => loadPaymentHistory(m)} title="Historial de pagos">
-                    <History className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => { setPaymentMember(m); setPaymentAmount(m.monthlyAmount); setPaymentMethod("transferencia"); setPaymentNotes(""); setPaymentDialogOpen(true); }} disabled={isDemo || m.status !== "approved"} title="Registrar pago">
-                    <DollarSign className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              ),
-            },
-          ]}
-          data={members}
-          keyExtractor={(m) => m.id}
-          onEdit={isDemo ? undefined : (m) => {
+  const actionColumn = {
+    key: "actions",
+    header: "",
+    render: (m: Member) => (
+      <div className="flex items-center justify-end gap-0.5">
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+          onClick={() => loadPaymentHistory(m)}
+          title="Ver pagos"
+        >
+          <History className="h-3.5 w-3.5" />
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+          onClick={() => {
+            setPaymentMember(m);
+            setPaymentAmount(m.monthlyAmount);
+            setPaymentMethod("transferencia");
+            setPaymentNotes("");
+            setPaymentDialogOpen(true);
+          }}
+          disabled={isDemo || m.status !== "approved"}
+          title="Registrar pago"
+        >
+          <DollarSign className="h-3.5 w-3.5" />
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+          onClick={() => {
             setEditingMember(m);
             setForm({
               name: m.name, rut: m.rut, email: m.email, phone: m.phone || "",
@@ -469,10 +523,110 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
             setFormErrors({});
             setDialogOpen(true);
           }}
-          onDelete={isDemo ? undefined : handleDelete}
+          disabled={isDemo}
+          title="Editar"
+        >
+          <Pencil className="h-3.5 w-3.5" />
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+          onClick={() => handleDelete(m)}
+          disabled={isDemo}
+          title="Eliminar"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    ),
+  };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <AdminNav clubId={clubId} />
+        <div className="container mx-auto px-4 py-8">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 w-48 bg-muted rounded" />
+            <div className="h-4 w-64 bg-muted rounded" />
+            <div className="grid gap-4 sm:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-24 bg-muted rounded-lg" />
+              ))}
+            </div>
+            <div className="h-64 bg-muted rounded-lg" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <AdminNav clubId={clubId} />
+      <div className="container mx-auto px-4 py-8 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">Socios</h1>
+            <p className="text-muted-foreground text-sm">{members.length} registrados, {activeMembers} activos</p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={downloadPDF} disabled={members.length === 0} size="sm">
+              <FileDown className="h-4 w-4 mr-1" /> Reporte
+            </Button>
+            <Button onClick={() => { setEditingMember(null); setForm(defaultForm); setFormErrors({}); setDialogOpen(true); }} disabled={isDemo} size="sm">
+              <Plus className="h-4 w-4 mr-1" /> Socio
+            </Button>
+          </div>
+        </div>
+
+        {(overdueMembers.length > 0 || expiringMembers.length > 0) && (
+          <div className="space-y-2">
+            {overdueMembers.length > 0 && (
+              <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/50 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+                <AlertTriangle className="h-5 w-5 shrink-0" />
+                <span><strong>{overdueMembers.length}</strong> socio{overdueMembers.length > 1 ? "s" : ""} con membresía vencida</span>
+              </div>
+            )}
+            {overdueMembers.length === 0 && expiringMembers.length > 0 && (
+              <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/50 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
+                <Calendar className="h-5 w-5 shrink-0" />
+                <span><strong>{expiringMembers.length}</strong> socio{expiringMembers.length > 1 ? "s" : ""} próximo{expiringMembers.length > 1 ? "s" : ""} a vencer</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="grid gap-4 sm:grid-cols-4">
+          <div className="rounded-lg border bg-card p-4">
+            <p className="text-sm text-muted-foreground">Aporte mensual total</p>
+            <p className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">{formatCurrency(totalMonthly)}</p>
+          </div>
+          <div className="rounded-lg border bg-card p-4">
+            <p className="text-sm text-muted-foreground">Total recaudado</p>
+            <p className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">{formatCurrency(totalPaid)}</p>
+          </div>
+          <div className="rounded-lg border bg-card p-4">
+            <p className="text-sm text-muted-foreground">Socios activos</p>
+            <p className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">{activeMembers}</p>
+          </div>
+          <div className="rounded-lg border bg-card p-4">
+            <p className="text-sm text-muted-foreground">Membresías vencidas</p>
+            <p className="text-2xl font-bold text-red-500 dark:text-red-400">{overdueMembers.length}</p>
+          </div>
+        </div>
+
+        <DataTable
+          columns={[...columns, actionColumn]}
+          data={members}
+          keyExtractor={(m) => m.id}
         />
 
-        <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) { setEditingMember(null); setFormErrors({}); } setDialogOpen(open); }}>
+        <Dialog open={dialogOpen} onOpenChange={(open) => {
+          if (!open) { setEditingMember(null); setFormErrors({}); }
+          setDialogOpen(open);
+        }}>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>{editingMember ? "Editar Socio" : "Nuevo Socio"}</DialogTitle>
@@ -481,37 +635,37 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Nombre completo</Label>
-                  <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+                  <Label htmlFor="name">Nombre completo</Label>
+                  <Input id="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
                   {formErrors.name && <p className="text-xs text-red-500">{formErrors.name}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label>RUT</Label>
-                  <Input value={form.rut} onChange={(e) => setForm({ ...form, rut: e.target.value })} required placeholder="12.345.678-9" />
+                  <Label htmlFor="rut">RUT</Label>
+                  <Input id="rut" value={form.rut} onChange={(e) => setForm({ ...form, rut: e.target.value })} required placeholder="12.345.678-9" />
                   {formErrors.rut && <p className="text-xs text-red-500">{formErrors.rut}</p>}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Email</Label>
-                  <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
                   {formErrors.email && <p className="text-xs text-red-500">{formErrors.email}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label>Teléfono</Label>
-                  <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
+                  <Label htmlFor="phone">Teléfono</Label>
+                  <Input id="phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
                   {formErrors.phone && <p className="text-xs text-red-500">{formErrors.phone}</p>}
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Dirección</Label>
-                <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+                <Label htmlFor="address">Dirección</Label>
+                <Input id="address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Tipo de membresía</Label>
+                  <Label htmlFor="membershipType">Tipo de membresía</Label>
                   <Select value={form.membershipType} onValueChange={(v) => setForm({ ...form, membershipType: (v ?? "basic") as Member["membershipType"] })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="membershipType"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="basic">Básico</SelectItem>
                       <SelectItem value="premium">Premium</SelectItem>
@@ -520,29 +674,29 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Aporte mensual (CLP)</Label>
-                  <Input type="number" value={form.monthlyAmount || ""} onChange={(e) => setForm({ ...form, monthlyAmount: parseInt(e.target.value) || 0 })} required />
+                  <Label htmlFor="monthlyAmount">Aporte mensual (CLP)</Label>
+                  <Input id="monthlyAmount" type="number" value={form.monthlyAmount || ""} onChange={(e) => setForm({ ...form, monthlyAmount: parseInt(e.target.value) || 0 })} required />
                   {formErrors.monthlyAmount && <p className="text-xs text-red-500">{formErrors.monthlyAmount}</p>}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Fecha de inicio</Label>
-                  <Input type="date" value={form.startDate} onChange={(e) => handleStartDateChange(e.target.value)} />
+                  <Label htmlFor="startDate">Fecha de inicio</Label>
+                  <Input id="startDate" type="date" value={form.startDate} onChange={(e) => handleStartDateChange(e.target.value)} />
                   <p className="text-xs text-muted-foreground">Término se auto-asigna +1 mes</p>
                 </div>
                 <div className="space-y-2">
-                  <Label>Fecha de término</Label>
-                  <Input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
+                  <Label htmlFor="endDate">Fecha de término</Label>
+                  <Input id="endDate" type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Notas</Label>
-                <Input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+                <Label htmlFor="notes">Notas</Label>
+                <Input id="notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
               </div>
               <div className="flex justify-end gap-3 pt-2">
-                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-                <Button type="submit">{editingMember ? "Actualizar" : "Guardar"}</Button>
+                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>Cancelar</Button>
+                <Button type="submit" disabled={saving}>{saving ? "Guardando..." : editingMember ? "Actualizar" : "Guardar"}</Button>
               </div>
             </form>
           </DialogContent>
@@ -556,29 +710,45 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Monto (CLP)</Label>
-                <Input type="number" value={paymentAmount || ""} onChange={(e) => setPaymentAmount(parseInt(e.target.value) || 0)} />
+                <Label htmlFor="paymentAmount">Monto (CLP)</Label>
+                <Input
+                  id="paymentAmount"
+                  type="number"
+                  value={paymentAmount || ""}
+                  onChange={(e) => setPaymentAmount(parseInt(e.target.value) || 0)}
+                />
               </div>
               <div className="space-y-2">
-                <Label>Método de pago</Label>
+                <Label htmlFor="paymentMethod">Método de pago</Label>
                 <Select value={paymentMethod} onValueChange={(v) => setPaymentMethod((v ?? "transferencia") as typeof paymentMethod)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="paymentMethod"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="transferencia">Transferencia</SelectItem>
-                    <SelectItem value="efectivo">Efectivo</SelectItem>
-                    <SelectItem value="tarjeta">Tarjeta</SelectItem>
-                    <SelectItem value="otro">Otro</SelectItem>
+                    {PAYMENT_METHODS.map((pm) => (
+                      <SelectItem key={pm.value} value={pm.value}>{pm.label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Notas</Label>
-                <Input value={paymentNotes} onChange={(e) => setPaymentNotes(e.target.value)} placeholder="Opcional" />
+                <Label htmlFor="paymentNotes">Notas</Label>
+                <Input id="paymentNotes" value={paymentNotes} onChange={(e) => setPaymentNotes(e.target.value)} placeholder="Opcional" />
               </div>
-              <p className="text-xs text-muted-foreground">
-                Cuota mensual: {formatCurrency(paymentMember?.monthlyAmount ?? 0)}
-                {paymentMember?.nextDueDate && ` · Próximo vencimiento: ${formatDate(paymentMember.nextDueDate)}`}
-              </p>
+              {paymentMember && paymentAmount > 0 && (
+                <div className="rounded-lg bg-muted p-3 space-y-1 text-sm">
+                  <p>Cuota mensual: <strong>{formatCurrency(paymentMember.monthlyAmount)}</strong></p>
+                  <p>Meses cubiertos: <strong>{Math.floor(paymentAmount / paymentMember.monthlyAmount)}</strong></p>
+                  {paymentAmount % paymentMember.monthlyAmount > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      {formatCurrency(paymentAmount % paymentMember.monthlyAmount)} a favor (saldo)
+                    </p>
+                  )}
+                  {paymentMember.nextDueDate && (
+                    <p className="text-xs text-muted-foreground">
+                      Próximo vencimiento: {formatDate(paymentMember.nextDueDate)}
+                    </p>
+                  )}
+                </div>
+              )}
               <div className="flex justify-end gap-3">
                 <Button type="button" variant="outline" onClick={() => setPaymentDialogOpen(false)}>Cancelar</Button>
                 <Button onClick={handleRegisterPayment}>Registrar</Button>
@@ -600,13 +770,13 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
             ) : (
               <div className="max-h-80 overflow-y-auto space-y-2">
                 {payments.map((p) => (
-                  <div key={p.id} className="flex items-center justify-between rounded-lg border p-3">
+                  <div key={p.id} className="flex items-center justify-between rounded-lg border bg-card p-3">
                     <div>
                       <p className="font-medium text-sm">{formatCurrency(p.amount)}</p>
                       <p className="text-xs text-muted-foreground">{formatDate(p.paymentDate)}</p>
                     </div>
                     <div className="text-right">
-                      <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                      <span className="inline-flex items-center rounded-full bg-blue-100 dark:bg-blue-900 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300">
                         {paymentMethodLabels[p.paymentMethod] || p.paymentMethod}
                       </span>
                       {p.notes && <p className="text-xs text-muted-foreground mt-1">{p.notes}</p>}
