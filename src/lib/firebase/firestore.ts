@@ -17,6 +17,7 @@ import type {
   Product,
   Sponsor,
   Member,
+  Payment,
   TeamStats,
   PlayerStats,
   ClubHistory,
@@ -250,6 +251,21 @@ export async function getTeamStats(clubId: string): Promise<TeamStats | null> {
   } catch {
     return null;
   }
+}
+
+export async function getMember(id: string): Promise<Member | null> {
+  return getDocument<Member>("members", id);
+}
+
+export async function getPayments(memberId: string): Promise<Payment[]> {
+  const data = await getDocuments<Payment>(
+    "payments", where("memberId", "==", memberId)
+  );
+  return data.sort((a, b) => {
+    const da = a.createdAt?.toMillis?.() ?? 0;
+    const db = b.createdAt?.toMillis?.() ?? 0;
+    return db - da;
+  });
 }
 
 export async function getMembers(clubId: string): Promise<Member[]> {

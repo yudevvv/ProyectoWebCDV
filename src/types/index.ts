@@ -185,11 +185,26 @@ export type Member = {
   monthlyAmount: number;
   totalPaid: number;
   lastPayment?: Timestamp;
+  lastPaymentDate?: Timestamp;
   startDate: Timestamp;
   endDate?: Timestamp;
+  nextDueDate?: Timestamp;
   notes?: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
+};
+
+export type Payment = {
+  id: string;
+  memberId: string;
+  clubId: string;
+  amount: number;
+  paymentDate: Timestamp;
+  paymentMethod: "transferencia" | "efectivo" | "tarjeta" | "otro";
+  notes?: string;
+  periodStart?: Timestamp;
+  periodEnd?: Timestamp;
+  createdAt: Timestamp;
 };
 
 export type News = {

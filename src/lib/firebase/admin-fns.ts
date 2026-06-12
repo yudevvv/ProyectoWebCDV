@@ -227,16 +227,24 @@ export async function deleteSponsor(id: string) {
 // ---- Members ----
 export async function createMember(
   clubId: string,
-  data: Pick<Member, "name" | "rut" | "email" | "phone" | "membershipType" | "monthlyAmount"> & { startDate?: Timestamp; endDate?: Timestamp }
+  data: Pick<Member, "name" | "rut" | "email" | "phone" | "membershipType" | "monthlyAmount"> & {
+    startDate?: Timestamp;
+    endDate?: Timestamp;
+    nextDueDate?: Timestamp;
+    address?: string;
+    notes?: string;
+  }
 ) {
   const dbInstance = await getDb();
   const docRef = await addDoc(collection(dbInstance, "members"), {
     ...data,
-    address: "",
-    status: "approved",
+    address: data.address ?? "",
+    notes: data.notes ?? "",
+    status: "approved" as const,
     totalPaid: 0,
     startDate: data.startDate ?? serverTimestamp(),
     endDate: data.endDate ?? undefined,
+    nextDueDate: data.nextDueDate ?? undefined,
     clubId,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -255,6 +263,33 @@ export async function updateMember(id: string, data: Partial<Member>) {
 export async function deleteMember(id: string) {
   const dbInstance = await getDb();
   await deleteDoc(doc(dbInstance, "members", id));
+}
+
+// ---- Payments ----
+export async function createPayment(
+  memberId: string,
+  clubId: string,
+  data: {
+    amount: number;
+    paymentMethod: "transferencia" | "efectivo" | "tarjeta" | "otro";
+    notes?: string;
+    periodStart?: Timestamp;
+    periodEnd?: Timestamp;
+  }
+) {
+  const dbInstance = await getDb();
+  const docRef = await addDoc(collection(dbInstance, "payments"), {
+    memberId,
+    clubId,
+    amount: data.amount,
+    paymentMethod: data.paymentMethod,
+    notes: data.notes ?? "",
+    periodStart: data.periodStart ?? null,
+    periodEnd: data.periodEnd ?? null,
+    paymentDate: serverTimestamp(),
+    createdAt: serverTimestamp(),
+  });
+  return docRef.id;
 }
 
 // ---- History ----
