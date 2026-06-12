@@ -101,6 +101,7 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
   const [paymentMemberId, setPaymentMemberId] = useState<string | null>(null);
   const paymentMember = paymentMemberId ? (members.find((m) => m.id === paymentMemberId) ?? null) : null;
   const [paymentAmount, setPaymentAmount] = useState(0);
+  const [paymentMonths, setPaymentMonths] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState<"transferencia" | "efectivo" | "tarjeta" | "otro">("transferencia");
   const [paymentNotes, setPaymentNotes] = useState("");
   const [form, setForm] = useState<MemberFormData>(defaultForm);
@@ -235,9 +236,9 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
     if (!paymentMember) return;
     if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     if (paymentAmount <= 0) { toast.error("Ingresa un monto válido"); return; }
+    if (paymentMonths < 1) { toast.error("Debes cubrir al menos 1 mes"); return; }
 
-    const monthsPaid = Math.floor(paymentAmount / paymentMember.monthlyAmount);
-    const remaining = paymentAmount % paymentMember.monthlyAmount;
+    const monthsPaid = paymentMonths;
 
     try {
       const now = Timestamp.now();
@@ -280,9 +281,7 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
 
       await updateMember(paymentMember.id, updateData as Partial<Member>);
 
-      const msg = monthsPaid >= 1
-        ? `Pago registrado · ${monthsPaid} mes${monthsPaid > 1 ? "es" : ""}${remaining > 0 ? ` · ${formatCurrency(remaining)} a favor` : ""}`
-        : "Pago registrado";
+      const msg = `Pago registrado · ${formatCurrency(paymentAmount)} · ${monthsPaid} mes${monthsPaid > 1 ? "es" : ""}`;
       toast.success(msg);
 
       setPaymentDialogOpen(false);
@@ -505,6 +504,7 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
           onClick={() => {
             setPaymentMemberId(m.id);
             setPaymentAmount(m.monthlyAmount);
+            setPaymentMonths(1);
             setPaymentMethod("transferencia");
             setPaymentNotes("");
             setPaymentDialogOpen(true);
@@ -716,12 +716,32 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="paymentAmount">Monto (CLP)</Label>
+                <Label htmlFor="paymentMonths">Meses a cubrir</Label>
+                <Input
+                  id="paymentMonths"
+                  type="number"
+                  min={1}
+                  value={paymentMonths || ""}
+                  onChange={(e) => {
+                    const m = parseInt(e.target.value) || 0;
+                    setPaymentMonths(m);
+                    if (paymentMember) setPaymentAmount(m * paymentMember.monthlyAmount);
+                  }}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="paymentAmount">Monto total (CLP)</Label>
                 <Input
                   id="paymentAmount"
                   type="number"
                   value={paymentAmount || ""}
-                  onChange={(e) => setPaymentAmount(parseInt(e.target.value) || 0)}
+                  onChange={(e) => {
+                    const a = parseInt(e.target.value) || 0;
+                    setPaymentAmount(a);
+                    if (paymentMember && paymentMember.monthlyAmount > 0) {
+                      setPaymentMonths(Math.max(1, Math.floor(a / paymentMember.monthlyAmount)));
+                    }
+                  }}
                 />
               </div>
               <div className="space-y-2">
@@ -739,22 +759,36 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
                 <Label htmlFor="paymentNotes">Notas</Label>
                 <Input id="paymentNotes" value={paymentNotes} onChange={(e) => setPaymentNotes(e.target.value)} placeholder="Opcional" />
               </div>
-              {paymentMember && paymentAmount > 0 && (
-                <div className="rounded-lg bg-muted p-3 space-y-1 text-sm">
-                  <p>Cuota mensual: <strong>{formatCurrency(paymentMember.monthlyAmount)}</strong></p>
-                  <p>Meses cubiertos: <strong>{Math.floor(paymentAmount / paymentMember.monthlyAmount)}</strong></p>
-                  {paymentAmount % paymentMember.monthlyAmount > 0 && (
-                    <p className="text-xs text-muted-foreground">
-                      {formatCurrency(paymentAmount % paymentMember.monthlyAmount)} a favor (saldo)
-                    </p>
-                  )}
-                  {paymentMember.nextDueDate && (
-                    <p className="text-xs text-muted-foreground">
-                      Próximo vencimiento: {formatDate(paymentMember.nextDueDate)}
-                    </p>
-                  )}
-                </div>
-              )}
+              {paymentMember && paymentAmount > 0 && paymentMonths >= 1 && (() => {
+                const now = new Date();
+                const currentEnd = paymentMember.endDate
+                  ? new Date(paymentMember.endDate.seconds * 1000)
+                  : null;
+                const baseEnd = currentEnd && currentEnd > now ? currentEnd : now;
+                const newEnd = addMonths(baseEnd, paymentMonths);
+                const newDue = addMonths(now, 1);
+                return (
+                  <div className="rounded-lg bg-muted p-3 space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span>Cuota mensual</span>
+                      <strong>{formatCurrency(paymentMember.monthlyAmount)}</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Meses a cubrir</span>
+                      <strong>{paymentMonths}</strong>
+                    </div>
+                    <div className="border-t border-border my-1.5" />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Nuevo fin de membresía</span>
+                      <span>{formatDate(Timestamp.fromDate(newEnd))}</span>
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Próximo vencimiento</span>
+                      <span>{formatDate(Timestamp.fromDate(newDue))}</span>
+                    </div>
+                  </div>
+                );
+              })()}
               <div className="flex justify-end gap-3">
                 <Button type="button" variant="outline" onClick={() => setPaymentDialogOpen(false)}>Cancelar</Button>
                 <Button onClick={handleRegisterPayment}>Registrar</Button>
