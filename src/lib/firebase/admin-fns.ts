@@ -187,7 +187,7 @@ export async function createSponsor(
   data: CreateSponsorData
 ) {
   const dbInstance = await getDb();
-  const docRef = await addDoc(collection(dbInstance, "sponsors"), {
+  const docData = {
     name: data.name,
     tier: data.tier,
     logo: data.logo ?? "",
@@ -198,23 +198,28 @@ export async function createSponsor(
     contributionCurrency: data.contributionCurrency ?? "CLP",
     complianceStatus: data.complianceStatus ?? "pendiente",
     complianceNotes: data.complianceNotes ?? "",
+    incumplidoReason: data.incumplidoReason ?? "",
     clubId,
     active: true,
     startDate: data.startDate ?? serverTimestamp(),
-    endDate: data.endDate ?? undefined,
+    ...(data.endDate ? { endDate: data.endDate } : {}),
     impressions: 0,
     clicks: 0,
     ctr: 0,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-  });
+  };
+  const docRef = await addDoc(collection(dbInstance, "sponsors"), docData);
   return docRef.id;
 }
 
 export async function updateSponsor(id: string, data: Partial<Sponsor>) {
   const dbInstance = await getDb();
+  const clean = Object.fromEntries(
+    Object.entries(data).filter(([, v]) => v !== undefined)
+  );
   await updateDoc(doc(dbInstance, "sponsors", id), {
-    ...data,
+    ...clean,
     updatedAt: serverTimestamp(),
   });
 }

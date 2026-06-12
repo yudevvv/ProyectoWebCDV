@@ -31,7 +31,7 @@ export default async function AuspiciadoresPage({
   const club = await getClubBySlug(slug);
   if (!club) { return <NoFirebaseMessage title="Club no encontrado" description="Agrega credenciales de Firebase en .env.local" />; }
 
-  const sponsors = await getSponsors(club.id);
+  const sponsors = (await getSponsors(club.id)).filter((s) => s.complianceStatus !== "incumplido");
 
   return (
     <div className="flex flex-col min-h-screen">

@@ -259,6 +259,7 @@ export type Sponsor = {
   contributionCurrency: "CLP" | "USD";
   complianceStatus: "pendiente" | "cumpliendo" | "incumplido";
   complianceNotes?: string;
+  incumplidoReason?: string;
   active: boolean;
   startDate: Timestamp;
   endDate?: Timestamp;
