@@ -175,172 +175,160 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ===== PLATAFORMA CLUBES (DETALLADO) ===== */}
-        <section id="clubes" className="py-16 bg-white dark:bg-slate-950 border-b-2 border-slate-200 dark:border-slate-800">
-          <div className="container mx-auto px-4">
-            <p className="text-xs font-mono text-slate-400 dark:text-slate-500 text-center mb-2" aria-hidden="true">$ cat /toalesco/clubes/README.md</p>
-            <div className="inline-flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950 border-2 border-emerald-200 dark:border-emerald-800 rounded px-3 py-1 mb-4 mx-auto block w-fit">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Producto Principal</span>
-            </div>
-            <h2 className="text-2xl md:text-3xl font-bold text-center text-slate-900 dark:text-white">
-              <span className="text-cyan-600 dark:text-cyan-400">&gt;</span> Plataforma para Clubes Deportivos
-            </h2>
-            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 text-center font-mono max-w-2xl mx-auto">
-              Sistema completo de gestión deportiva. Administra socios, jugadores, estadísticas, pagos, patrocinadores y la experiencia de tus hinchas desde una única plataforma.
-            </p>
-          </div>
-        </section>
-
-        {/* ===== PROBLEMAS (CLUBES) ===== */}
-        <section className="py-12 bg-slate-100 dark:bg-slate-900 border-b-2 border-slate-200 dark:border-slate-800">
-          <div className="container mx-auto px-4">
-            <p className="text-xs font-mono text-slate-400 dark:text-slate-500 text-center mb-2" aria-hidden="true">$ ./diagnostico.sh --scan</p>
-            <h3 className="text-lg md:text-xl font-bold text-center text-slate-900 dark:text-white max-w-2xl mx-auto mb-8">
-              <span className="text-red-500 dark:text-red-400">&gt;</span> La mayoría de los clubes siguen gestionando todo manualmente.
-            </h3>
-            <div className="grid gap-3 sm:grid-cols-2 max-w-3xl mx-auto">
-              {problems.map((p, idx) => (
-                <div key={p.title} className="border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded p-4 hover:border-red-300 dark:hover:border-red-600 shadow-sm hover:shadow-md transition-all">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-mono font-bold text-red-400 dark:text-red-500 shrink-0">[ERROR_{idx + 1}]</span>
-                    <div className="flex h-7 w-7 items-center justify-center rounded bg-red-50 dark:bg-red-950 text-red-500 dark:text-red-400 shrink-0">
-                      <p.icon className="h-3.5 w-3.5" />
-                    </div>
-                    <h4 className="text-xs font-bold text-slate-900 dark:text-white">{p.title}</h4>
-                  </div>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono ml-[4.2rem]">{p.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ===== MÓDULOS (CLUBES) ===== */}
-        <section className="py-14 bg-white dark:bg-slate-950 border-b-2 border-slate-200 dark:border-slate-800">
-          <div className="container mx-auto px-4">
-            <p className="text-xs font-mono text-slate-400 dark:text-slate-500 text-center mb-2" aria-hidden="true">$ ls /toalesco/clubes/modulos/</p>
-            <h3 className="text-lg md:text-xl font-bold text-center text-slate-900 dark:text-white mb-8">
-              <span className="text-cyan-600 dark:text-cyan-400">&gt;</span> Módulos incluidos
-            </h3>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
-              {modules.map((mod) => (
-                <div key={mod.title} className="border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded p-4 hover:border-cyan-300 dark:hover:border-cyan-600 shadow-sm hover:shadow-md transition-all">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-cyan-50 dark:bg-cyan-950 text-cyan-600 dark:text-cyan-400">
-                      <mod.icon className="h-4 w-4" />
-                    </div>
-                    <h4 className="text-xs font-bold text-slate-900 dark:text-white">{mod.title}</h4>
-                  </div>
-                  <ul className="space-y-1">
-                    {mod.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2 text-[11px] text-slate-500 dark:text-slate-400 font-mono">
-                        <span className="text-emerald-500 dark:text-emerald-400 font-bold shrink-0">$</span>
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ===== SUELDOS Y CONTRATOS (CLUBES) ===== */}
-        <section className="relative overflow-hidden py-14 bg-slate-100 dark:bg-slate-900 border-b-2 border-slate-200 dark:border-slate-800">
-          <div className="absolute inset-0 bg-gradient-to-br from-cyan-50 via-white to-emerald-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900" />
-          <div className="container mx-auto px-4 relative">
-            <div className="max-w-4xl mx-auto">
-              <div className="inline-flex items-center gap-2 bg-amber-50 dark:bg-amber-950 border-2 border-amber-200 dark:border-amber-800 rounded px-3 py-1 mb-3">
-                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                <span className="text-[10px] font-mono font-bold text-amber-700 dark:text-amber-400 uppercase">Próximamente</span>
+        {/* ===== PLATAFORMA CLUBES (COMPACTO + DINÁMICO) ===== */}
+        <section id="clubes">
+          {/* Cabecera */}
+          <div className="py-12 bg-white dark:bg-slate-950 border-b-2 border-slate-200 dark:border-slate-800">
+            <div className="container mx-auto px-4 text-center">
+              <p className="text-xs font-mono text-slate-400 dark:text-slate-500 mb-2" aria-hidden="true">$ cat /toalesco/clubes/README.md</p>
+              <div className="inline-flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950 border-2 border-emerald-200 dark:border-emerald-800 rounded px-3 py-1 mb-4">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Producto Principal</span>
               </div>
-              <p className="text-xs font-mono text-slate-400 dark:text-slate-500 mb-1" aria-hidden="true">$ ./modulo_sueldos --preview</p>
-              <h3 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white">
-                <span className="text-cyan-600 dark:text-cyan-400">&gt;</span> Gestión de Sueldos y Contratos
-              </h3>
-              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 max-w-2xl font-mono">
-                Sistema diseñado para clubes que necesitan controlar información financiera de jugadores y cuerpo técnico.
+              <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
+                <span className="text-cyan-600 dark:text-cyan-400">&gt;</span> Plataforma para Clubes Deportivos
+              </h2>
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 font-mono max-w-2xl mx-auto">
+                Sistema completo de gestión deportiva. Administra socios, jugadores, estadísticas, pagos, patrocinadores y la experiencia de tus hinchas desde una única plataforma.
               </p>
-              <div className="mt-5 grid gap-2 sm:grid-cols-2 md:grid-cols-4">
-                {stellarFeatures.map((f) => (
-                  <div key={f} className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300 font-mono bg-white/80 dark:bg-slate-800/80 rounded px-3 py-2 border border-slate-200 dark:border-slate-700">
-                    <span className="text-emerald-500 dark:text-emerald-400 font-bold shrink-0">+</span>
-                    {f}
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                <span className="text-[10px] font-mono bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-400 border-2 border-amber-200 dark:border-amber-800 rounded px-2 py-1 font-bold">⚠ EN DESARROLLO</span>
-                <span className="text-[10px] font-mono bg-cyan-50 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-400 border-2 border-cyan-200 dark:border-cyan-800 rounded px-2 py-1 font-bold">▸ DISPONIBLE PRÓXIMAMENTE</span>
+              <div className="mt-6 flex items-center justify-center gap-3 flex-wrap">
+                <a href="#clubes-modulos" className="inline-flex h-9 items-center justify-center rounded bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-400 px-5 text-xs font-mono font-bold text-white dark:text-slate-900 transition-all border-b-2 border-cyan-800 dark:border-cyan-600">
+                  Ver Módulos
+                </a>
+                <a href="#clubes-precios" className="inline-flex h-9 items-center justify-center rounded border-2 border-slate-300 dark:border-slate-600 hover:border-cyan-400 dark:hover:border-cyan-500 hover:text-cyan-600 dark:hover:text-cyan-400 px-5 text-xs font-mono font-medium text-slate-700 dark:text-slate-300 transition-all">
+                  Ver Planes
+                </a>
+                <Link href="/demo" className="inline-flex h-9 items-center justify-center rounded bg-emerald-600 hover:bg-emerald-500 px-5 text-xs font-mono font-bold text-white transition-all border-b-2 border-emerald-800">
+                  Probar Demo <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                </Link>
               </div>
             </div>
           </div>
-        </section>
 
-        {/* ===== PRECIOS CLUBES ===== */}
-        <section className="py-14 bg-white dark:bg-slate-950 border-b-2 border-slate-200 dark:border-slate-800">
-          <div className="container mx-auto px-4">
-            <p className="text-xs font-mono text-slate-400 dark:text-slate-500 text-center mb-2" aria-hidden="true">$ cat /toalesco/clubes/pricing.txt</p>
-            <h3 className="text-lg md:text-xl font-bold text-center text-slate-900 dark:text-white mb-8">
-              <span className="text-cyan-600 dark:text-cyan-400">&gt;</span> Planes para Clubes
-            </h3>
-            <div className="grid gap-5 sm:grid-cols-2 max-w-2xl mx-auto">
-              {platformPlans.map((plan, idx) => (
-                <div key={plan.name} className={`border-2 rounded p-5 bg-white dark:bg-slate-800 transition-all hover:shadow-lg ${idx === 1 ? "border-cyan-400 dark:border-cyan-500 shadow-md dark:shadow-cyan-900/20" : "border-slate-300 dark:border-slate-700 shadow-sm hover:border-cyan-300 dark:hover:border-cyan-600"}`}>
-                  {idx === 1 && <span className="text-[10px] font-mono font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950 border border-cyan-200 dark:border-cyan-800 rounded px-2 py-0.5 mb-2 inline-block">RECOMENDADO</span>}
-                  <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">{plan.name}</p>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white font-mono">{plan.price}<span className="text-xs text-slate-500 font-normal ml-1">{plan.period}</span></p>
-                  <ul className="mt-4 space-y-1.5">
-                    {plan.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-300 font-mono">
-                        <span className="text-emerald-500 dark:text-emerald-400 font-bold shrink-0">+</span>
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <a
-                    href={`mailto:toalesco@tutamail.com?subject=Quiero%20contratar%20${plan.name.replace(/\s/g, '%20')}`}
-                    className="mt-4 inline-flex h-9 w-full items-center justify-center rounded bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-400 border-b-2 border-cyan-800 dark:border-cyan-600 text-xs font-mono font-bold text-white dark:text-slate-900 transition-all"
-                  >
-                    Contratar ▸
-                  </a>
+          {/* Problemas + Módulos en grid compacto */}
+          <div id="clubes-modulos" className="py-10 bg-slate-100 dark:bg-slate-900 border-b-2 border-slate-200 dark:border-slate-800">
+            <div className="container mx-auto px-4">
+              <div className="grid lg:grid-cols-5 gap-6 max-w-6xl mx-auto">
+                <div className="lg:col-span-2">
+                  <TerminalWindow title="diagnostico.sh">
+                    <p className="text-xs font-mono text-slate-400 dark:text-slate-500 mb-3">$ ./diagnostico.sh --scan</p>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3">
+                      <span className="text-red-500 dark:text-red-400">&gt;</span> Problemas comunes
+                    </h3>
+                    <div className="space-y-2">
+                      {problems.map((p, idx) => (
+                        <div key={p.title} className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded p-2.5">
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <span className="text-[9px] font-mono font-bold text-red-400 shrink-0">[E{idx + 1}]</span>
+                            <h4 className="text-[11px] font-bold text-slate-900 dark:text-white">{p.title}</h4>
+                          </div>
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">{p.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </TerminalWindow>
                 </div>
-              ))}
+                <div className="lg:col-span-3">
+                  <TerminalWindow title="modulos.txt">
+                    <p className="text-xs font-mono text-slate-400 dark:text-slate-500 mb-3">$ ls /toalesco/clubes/modulos/</p>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3">
+                      <span className="text-cyan-600 dark:text-cyan-400">&gt;</span> Módulos incluidos
+                    </h3>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {modules.map((mod) => (
+                        <div key={mod.title} className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded p-2.5 hover:border-cyan-300 dark:hover:border-cyan-600 transition-all">
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <div className="flex h-6 w-6 items-center justify-center rounded bg-cyan-50 dark:bg-cyan-950 text-cyan-600 dark:text-cyan-400">
+                              <mod.icon className="h-3.5 w-3.5" />
+                            </div>
+                            <h4 className="text-[11px] font-bold text-slate-900 dark:text-white">{mod.title}</h4>
+                          </div>
+                          <ul className="space-y-0.5">
+                            {mod.features.map((f) => (
+                              <li key={f} className="flex items-start gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                                <span className="text-emerald-500 dark:text-emerald-400 font-bold shrink-0">$</span>
+                                {f}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </TerminalWindow>
+                </div>
+              </div>
+
+              {/* Sueldos como card inline */}
+              <div className="mt-6 max-w-6xl mx-auto">
+                <div className="border-2 border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/30 rounded p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <div className="inline-flex items-center gap-2 bg-amber-50 dark:bg-amber-950 border-2 border-amber-200 dark:border-amber-800 rounded px-2 py-0.5 shrink-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                    <span className="text-[9px] font-mono font-bold text-amber-700 dark:text-amber-400 uppercase">Próximamente</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-slate-900 dark:text-white">Gestión de Sueldos y Contratos</p>
+                    <p className="text-[10px] font-mono text-slate-500 dark:text-slate-400 mt-0.5">Control financiero de jugadores y cuerpo técnico: contratos, bonificaciones, incentivos y alertas.</p>
+                  </div>
+                  <div className="flex gap-1.5 shrink-0">
+                    <span className="text-[9px] font-mono bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 rounded px-1.5 py-0.5 font-bold">⚠ EN DESARROLLO</span>
+                    <span className="text-[9px] font-mono bg-cyan-50 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800 rounded px-1.5 py-0.5 font-bold">▸ PRÓXIMAMENTE</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </section>
 
-        {/* ===== DEMO (DENTRO DE CLUBES) ===== */}
-        <section className="py-14 bg-slate-900 dark:bg-black border-b-2 border-slate-700 dark:border-slate-800">
-          <div className="container mx-auto px-4 text-center">
-            <p className="text-xs font-mono text-slate-500 mb-2" aria-hidden="true">$ ./demo --start</p>
-            <h3 className="text-lg md:text-xl font-bold text-white">
-              <span className="text-emerald-400">&gt;</span> Prueba la Plataforma de Clubes
-            </h3>
-            <p className="mt-2 text-sm text-slate-400 font-mono max-w-lg mx-auto">
-              La mejor forma de entender la plataforma es usarla. Ingresa con credenciales de demo y explora todos los módulos.
-            </p>
-            <Link
-              href="/demo"
-              className="inline-flex mt-6 h-11 items-center justify-center rounded bg-emerald-600 hover:bg-emerald-500 hover:shadow-lg hover:shadow-emerald-600/25 px-8 text-sm font-mono font-bold text-white transition-all border-b-2 border-emerald-800"
-            >
-              Ingresar a Demo <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-            <div className="mt-6 inline-flex flex-wrap items-center justify-center gap-2 sm:gap-4 rounded bg-slate-800 dark:bg-slate-900 px-5 py-3 text-xs font-mono text-slate-300 border-2 border-slate-700 dark:border-slate-800">
-              <span className="flex items-center gap-2">
-                <span className="text-slate-500 font-bold">USUARIO:</span>
-                <span className="text-cyan-400 font-bold bg-slate-900/50 px-2 py-0.5 rounded">demo@toalesco.cl</span>
-              </span>
-              <span className="text-slate-600 hidden sm:inline">|</span>
-              <span className="flex items-center gap-2">
-                <span className="text-slate-500 font-bold">CLAVE:</span>
-                <span className="text-cyan-400 font-bold bg-slate-900/50 px-2 py-0.5 rounded">demo123</span>
-              </span>
-            </div>
-            <div className="mt-6 inline-flex items-center gap-2 text-xs font-mono text-slate-500">
-              <span>¿Preguntas?</span>
-              <a href="mailto:toalesco@tutamail.com" className="text-cyan-400 hover:text-cyan-300 underline">toalesco@tutamail.com</a>
+          {/* Pricing + Demo lado a lado */}
+          <div id="clubes-precios" className="py-10 bg-white dark:bg-slate-950 border-b-2 border-slate-200 dark:border-slate-800">
+            <div className="container mx-auto px-4">
+              <p className="text-xs font-mono text-slate-400 dark:text-slate-500 text-center mb-2" aria-hidden="true">$ cat /toalesco/clubes/pricing.txt</p>
+              <h3 className="text-lg md:text-xl font-bold text-center text-slate-900 dark:text-white mb-6">
+                <span className="text-cyan-600 dark:text-cyan-400">&gt;</span> Planes
+              </h3>
+              <div className="grid lg:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {platformPlans.map((plan, idx) => (
+                    <div key={plan.name} className={`border-2 rounded p-4 bg-white dark:bg-slate-800 transition-all hover:shadow-lg ${idx === 1 ? "border-cyan-400 dark:border-cyan-500 shadow-md dark:shadow-cyan-900/20" : "border-slate-300 dark:border-slate-700 shadow-sm hover:border-cyan-300 dark:hover:border-cyan-600"}`}>
+                      {idx === 1 && <span className="text-[9px] font-mono font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950 border border-cyan-200 dark:border-cyan-800 rounded px-1.5 py-0.5 mb-1.5 inline-block">RECOMENDADO</span>}
+                      <p className="text-xs font-bold text-slate-900 dark:text-white mb-0.5">{plan.name}</p>
+                      <p className="text-lg font-bold text-slate-900 dark:text-white font-mono">{plan.price}<span className="text-[10px] text-slate-500 font-normal ml-1">{plan.period}</span></p>
+                      <ul className="mt-2.5 space-y-1">
+                        {plan.features.map((f) => (
+                          <li key={f} className="flex items-start gap-1.5 text-[10px] text-slate-600 dark:text-slate-300 font-mono">
+                            <span className="text-emerald-500 dark:text-emerald-400 font-bold shrink-0">+</span>
+                            {f}
+                          </li>
+                        ))}
+                      </ul>
+                      <a href={`mailto:toalesco@tutamail.com?subject=Quiero%20contratar%20${plan.name.replace(/\s/g, '%20')}`} className="mt-3 inline-flex h-8 w-full items-center justify-center rounded bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-400 border-b-2 border-cyan-800 dark:border-cyan-600 text-[10px] font-mono font-bold text-white dark:text-slate-900 transition-all">
+                        Contratar ▸
+                      </a>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="bg-slate-900 dark:bg-black rounded border-2 border-slate-700 dark:border-slate-800 p-5 flex flex-col items-center justify-center text-center">
+                  <p className="text-[10px] font-mono text-slate-500 mb-2" aria-hidden="true">$ ./demo --start</p>
+                  <h4 className="text-base font-bold text-white">
+                    <span className="text-emerald-400">&gt;</span> Probá la plataforma
+                  </h4>
+                  <p className="mt-1 text-xs text-slate-400 font-mono max-w-xs">
+                    Ingresá con credenciales de demo y explorá todos los módulos.
+                  </p>
+                  <Link href="/demo" className="inline-flex mt-4 h-9 items-center justify-center rounded bg-emerald-600 hover:bg-emerald-500 hover:shadow-lg hover:shadow-emerald-600/25 px-6 text-xs font-mono font-bold text-white transition-all border-b-2 border-emerald-800">
+                    Ingresar a Demo <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                  </Link>
+                  <div className="mt-3 inline-flex flex-wrap items-center justify-center gap-1.5 rounded bg-slate-800 dark:bg-slate-900 px-3 py-2 text-[10px] font-mono text-slate-300 border border-slate-700 dark:border-slate-800">
+                    <span><span className="text-slate-500 font-bold">USUARIO:</span> <span className="text-cyan-400 font-bold">demo@toalesco.cl</span></span>
+                    <span className="text-slate-600 hidden xs:inline">|</span>
+                    <span><span className="text-slate-500 font-bold">CLAVE:</span> <span className="text-cyan-400 font-bold">demo123</span></span>
+                  </div>
+                  <div className="mt-3 text-[10px] font-mono text-slate-500">
+                    ¿Preguntas?{" "}
+                    <a href="mailto:toalesco@tutamail.com" className="text-cyan-400 hover:text-cyan-300 underline">toalesco@tutamail.com</a>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
