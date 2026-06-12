@@ -6,11 +6,10 @@ import { useTheme } from "@/providers/ThemeProvider";
 import { Moon, Sun, Menu, X } from "lucide-react";
 
 const navLinks = [
-  { label: "Plataforma", href: "#plataforma" },
   { label: "Servicios", href: "#servicios" },
-  { label: "Precios", href: "#precios" },
+  { label: "Clubes", href: "#clubes" },
+  { label: "Equipo", href: "#equipo" },
   { label: "Demo", href: "/demo" },
-  { label: "Iniciar Sesión", href: "/login" },
   { label: "Contacto", href: "mailto:toalesco@tutamail.com" },
 ];
 
