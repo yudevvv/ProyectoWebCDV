@@ -1,91 +1,99 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { KeyRound, User, ArrowRight, Monitor, Smartphone, Globe } from "lucide-react";
+import { ArrowRight, User, Monitor, Smartphone, Globe, ShoppingBag, ClipboardCheck } from "lucide-react";
 import Link from "next/link";
+
+const features = [
+  { icon: Monitor, title: "Dashboard", desc: "Próximos partidos, resultados y estadísticas del equipo" },
+  { icon: User, title: "Jugadores", desc: "Perfiles con estadísticas y rendimiento" },
+  { icon: Globe, title: "Portal Hinchas", desc: "Noticias, calendario, MVP y más" },
+  { icon: Smartphone, title: "MVP del Partido", desc: "Sistema de votación completamente funcional" },
+  { icon: ShoppingBag, title: "Tienda", desc: "Productos y merchandising del club" },
+  { icon: ClipboardCheck, title: "Panel Admin", desc: "Gestión de socios, noticias y configuraciones" },
+];
 
 export default function DemoPage() {
   return (
-    <div className="min-h-screen bg-white">
-      <nav className="border-b bg-white/80 backdrop-blur sticky top-0 z-50">
-        <div className="container mx-auto flex h-14 items-center justify-between px-4">
-          <Link href="/" className="font-bold text-lg" style={{ color: "#0891b2" }}>
+    <div className="min-h-screen bg-white dark:bg-slate-950">
+      <nav className="border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
+          <Link href="/" className="font-bold text-lg text-cyan-600 dark:text-cyan-400">
             TOALESCO
           </Link>
-          <Link
-            href="/login"
-            className="text-sm font-medium px-4 py-2 rounded-lg text-white"
-            style={{ backgroundColor: "#0891b2" }}
-          >
-            Iniciar Sesión
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/" className="text-xs font-mono text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
+              [Volver]
+            </Link>
+            <Link
+              href="/login?email=demo@toalesco.cl&password=demo123"
+              className="text-xs font-mono font-bold px-4 py-2 rounded text-white bg-cyan-600 hover:bg-cyan-700 border-b-2 border-cyan-800 transition-all"
+            >
+              Iniciar Sesion
+            </Link>
+          </div>
         </div>
       </nav>
 
-      <div className="container mx-auto px-4 py-16 max-w-4xl">
+      <div className="mx-auto max-w-4xl px-4 py-16">
         <div className="text-center mb-12">
-          <Badge className="mb-4" style={{ backgroundColor: "#0891b2" }}>Demo</Badge>
-          <h1 className="text-4xl font-bold mb-4">Prueba la Plataforma</h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            La mejor forma de entender TOALESCO es usarla. Ingresa con las credenciales de demo.
+          <p className="text-[10px] font-mono text-slate-400 mb-2" aria-hidden="true">$ ./demo --info</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-3">
+            <span className="text-emerald-500">&gt;</span> Probar la Plataforma
+          </h1>
+          <p className="text-sm font-mono text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
+            Ingresa con las credenciales de demo y explora todos los modulos.
           </p>
         </div>
 
-        <Card className="max-w-md mx-auto mb-12 border-2" style={{ borderColor: "#0891b220" }}>
-          <CardHeader className="text-center">
-            <CardTitle>Credenciales de Acceso</CardTitle>
-            <CardDescription>Usa estos datos para explorar la plataforma</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-3 p-3 rounded-lg" style={{ backgroundColor: "#f8fafc" }}>
-              <User className="w-5 h-5" style={{ color: "#0891b2" }} />
+        <div className="max-w-md mx-auto mb-14 rounded border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 overflow-hidden">
+          <div className="flex items-center gap-1.5 border-b border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2">
+            <div className="h-3 w-3 rounded-full bg-red-400" />
+            <div className="h-3 w-3 rounded-full bg-yellow-400" />
+            <div className="h-3 w-3 rounded-full bg-emerald-400" />
+            <span className="ml-2 text-[10px] font-mono text-slate-400 dark:text-slate-500">credenciales.sh</span>
+          </div>
+          <div className="p-5 space-y-4">
+            <p className="text-[10px] font-mono text-slate-400" aria-hidden="true">$ ./auth --credentials</p>
+            <div className="flex items-center gap-3 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-4 py-3">
+              <User className="h-5 w-5 text-cyan-600 dark:text-cyan-400 shrink-0" />
               <div>
-                <p className="text-xs text-muted-foreground">USUARIO</p>
-                <p className="font-mono font-bold text-sm">demo@toalesco.cl</p>
+                <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Usuario</p>
+                <p className="font-mono font-bold text-sm text-slate-900 dark:text-white">demo@toalesco.cl</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-3 rounded-lg" style={{ backgroundColor: "#f8fafc" }}>
-              <KeyRound className="w-5 h-5" style={{ color: "#059669" }} />
+            <div className="flex items-center gap-3 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-4 py-3">
+              <User className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <div>
-                <p className="text-xs text-muted-foreground">CONTRASEÑA</p>
-                <p className="font-mono font-bold text-sm">demo123</p>
+                <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Contrasena</p>
+                <p className="font-mono font-bold text-sm text-slate-900 dark:text-white">demo123</p>
               </div>
             </div>
-            <Link href="/login" className="block mt-6">
-              <Button className="w-full text-base py-6" style={{ backgroundColor: "#0891b2" }}>
-                Ingresar a Demo
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
+            <Link href="/login?email=demo@toalesco.cl&password=demo123" className="block">
+              <div className="mt-2 flex h-10 w-full items-center justify-center rounded bg-cyan-600 hover:bg-cyan-700 border-b-2 border-cyan-800 text-xs font-mono font-bold text-white transition-all cursor-pointer">
+                Iniciar Sesion <ArrowRight className="ml-2 h-4 w-4" />
+              </div>
             </Link>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <div className="text-center mb-16">
-          <h2 className="text-2xl font-bold mb-6">Lo que puedes explorar</h2>
+        <div className="text-center mb-14">
+          <p className="text-[10px] font-mono text-slate-400 mb-4" aria-hidden="true">$ ./modulos --list</p>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">
+            <span className="text-cyan-500">&gt;</span> Lo que puedes explorar
+          </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 text-left">
-            {[
-              { icon: Monitor, title: "Dashboard", desc: "Próximos partidos, resultados y estadísticas del equipo" },
-              { icon: User, title: "Jugadores", desc: "Perfiles con estadísticas y rendimiento" },
-              { icon: Globe, title: "Portal Hinchas", desc: "Noticias, calendario, MVP y más" },
-              { icon: Smartphone, title: "MVP del Partido", desc: "Sistema de votación completamente funcional" },
-              { icon: Monitor, title: "Tienda", desc: "Productos y merchandising del club" },
-              { icon: Monitor, title: "Panel Admin", desc: "Gestión de socios, noticias y configuraciones" },
-            ].map((item) => (
-              <Card key={item.title}>
-                <CardContent className="pt-6">
-                  <item.icon className="w-8 h-8 mb-3" style={{ color: "#0891b2" }} />
-                  <h3 className="font-semibold mb-1">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground">{item.desc}</p>
-                </CardContent>
-              </Card>
+            {features.map((item) => (
+              <div key={item.title} className="rounded border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 hover:border-cyan-200 dark:hover:border-cyan-800 transition-colors">
+                <item.icon className="h-6 w-6 text-cyan-600 dark:text-cyan-400 mb-3" />
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white mb-1">{item.title}</h3>
+                <p className="text-xs font-mono text-slate-500 dark:text-slate-400">{item.desc}</p>
+              </div>
             ))}
           </div>
         </div>
 
-        <div className="text-center py-8 border-t">
-          <p className="text-sm text-muted-foreground">
-            ¿Preguntas? Escríbenos a{" "}
-            <a href="mailto:toalesco@tutamail.com" className="font-medium" style={{ color: "#0891b2" }}>
+        <div className="text-center border-t border-slate-200 dark:border-slate-800 pt-8">
+          <p className="text-[10px] font-mono text-slate-400">
+            $ ./contacto --email&nbsp;
+            <a href="mailto:toalesco@tutamail.com" className="text-cyan-600 dark:text-cyan-400 hover:underline">
               toalesco@tutamail.com
             </a>
           </p>

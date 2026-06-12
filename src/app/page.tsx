@@ -310,14 +310,14 @@ export default function HomePage() {
                 <div className="bg-slate-900 dark:bg-black rounded border-2 border-slate-700 dark:border-slate-800 p-5 flex flex-col items-center justify-center text-center">
                   <p className="text-[10px] font-mono text-slate-500 mb-2" aria-hidden="true">$ ./demo --start</p>
                   <h4 className="text-base font-bold text-white">
-                    <span className="text-emerald-400">&gt;</span> Probá la plataforma
-                  </h4>
-                  <p className="mt-1 text-xs text-slate-400 font-mono max-w-xs">
-                    Ingresá con credenciales de demo y explorá todos los módulos.
+                     <span className="text-emerald-400">&gt;</span> Prueba la plataforma
+                   </h4>
+                   <p className="mt-1 text-xs text-slate-400 font-mono max-w-xs">
+                     Ingresa con credenciales de demo y explora todos los módulos.
                   </p>
-                  <Link href="/demo" className="inline-flex mt-4 h-9 items-center justify-center rounded bg-emerald-600 hover:bg-emerald-500 hover:shadow-lg hover:shadow-emerald-600/25 px-6 text-xs font-mono font-bold text-white transition-all border-b-2 border-emerald-800">
-                    Ingresar a Demo <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-                  </Link>
+                   <Link href="/login?email=demo@toalesco.cl&password=demo123" className="inline-flex mt-4 h-9 items-center justify-center rounded bg-emerald-600 hover:bg-emerald-500 hover:shadow-lg hover:shadow-emerald-600/25 px-6 text-xs font-mono font-bold text-white transition-all border-b-2 border-emerald-800">
+                     Ingresar a Demo <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                   </Link>
                   <div className="mt-3 inline-flex flex-wrap items-center justify-center gap-1.5 rounded bg-slate-800 dark:bg-slate-900 px-3 py-2 text-[10px] font-mono text-slate-300 border border-slate-700 dark:border-slate-800">
                     <span><span className="text-slate-500 font-bold">USUARIO:</span> <span className="text-cyan-400 font-bold">demo@toalesco.cl</span></span>
                     <span className="text-slate-600 hidden xs:inline">|</span>
