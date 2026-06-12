@@ -24,7 +24,6 @@ import type {
   TimelineEvent,
   Achievement,
   AppUser,
-  LNBPlayerStat,
 } from "@/types";
 
 function getDb() {
@@ -58,7 +57,8 @@ async function getDocuments<T>(
     const q = query(collection(getDb(), collectionName), ...constraints);
     const snapshot = await getDocs(q);
     return snapshot.docs.map((d) => mapDoc<T>({ id: d.id, data: () => d.data() as Record<string, unknown> }));
-  } catch {
+  } catch (e) {
+    console.error(`getDocuments(${collectionName}) error:`, e);
     return [];
   }
 }
@@ -67,7 +67,8 @@ export async function getClubBySlug(slug: string): Promise<Club | null> {
   try {
     const clubs = await getDocuments<Club>("clubs", where("slug", "==", slug));
     return clubs[0] || null;
-  } catch {
+  } catch (e) {
+    console.error("getClubBySlug error:", e);
     return null;
   }
 }
@@ -102,19 +103,17 @@ export async function getClubsByUser(uid: string): Promise<Club[]> {
 }
 
 export async function getPlayers(clubId: string): Promise<Player[]> {
-  return getDocuments<Player>(
-    "players", where("clubId", "==", clubId), orderBy("number", "asc")
+  const data = await getDocuments<Player>(
+    "players", where("clubId", "==", clubId)
   );
+  return data.sort((a, b) => (a.number ?? 0) - (b.number ?? 0));
 }
 
 export async function getActivePlayers(clubId: string): Promise<Player[]> {
-  try {
-    return await getDocuments<Player>(
-      "players", where("clubId", "==", clubId), where("active", "==", true), orderBy("number", "asc")
-    );
-  } catch {
-    return [];
-  }
+  const data = await getDocuments<Player>(
+    "players", where("clubId", "==", clubId), where("active", "==", true)
+  );
+  return data.sort((a, b) => (a.number ?? 0) - (b.number ?? 0));
 }
 
 export async function getPlayer(id: string): Promise<Player | null> {
@@ -124,44 +123,49 @@ export async function getPlayer(id: string): Promise<Player | null> {
 export async function getPlayerStats(playerId: string): Promise<PlayerStats | null> {
   try {
     const stats = await getDocuments<PlayerStats>(
-      "player_stats", where("playerId", "==", playerId), orderBy("season", "desc"), limit(1)
+      "player_stats", where("playerId", "==", playerId)
     );
-    return stats[0] || null;
+    return stats.sort((a, b) => (b.season ?? "").localeCompare(a.season ?? ""))[0] || null;
   } catch {
     return null;
   }
 }
 
 export async function getMatches(clubId: string): Promise<Match[]> {
-  try {
-    return await getDocuments<Match>(
-      "matches", where("clubId", "==", clubId), orderBy("date", "desc")
-    );
-  } catch {
-    return [];
-  }
+  const data = await getDocuments<Match>(
+    "matches", where("clubId", "==", clubId)
+  );
+  return data.sort((a, b) => {
+    const da = a.date?.toMillis?.() ?? 0;
+    const db = b.date?.toMillis?.() ?? 0;
+    return db - da;
+  });
 }
 
 export async function getUpcomingMatches(clubId: string, matchLimit = 5): Promise<Match[]> {
-  try {
-    return await getDocuments<Match>(
-      "matches", where("clubId", "==", clubId), where("status", "in", ["upcoming", "live"]),
-      orderBy("date", "asc"), limit(matchLimit)
-    );
-  } catch {
-    return [];
-  }
+  const data = await getDocuments<Match>(
+    "matches", where("clubId", "==", clubId), where("status", "in", ["upcoming", "live"])
+  );
+  return data
+    .sort((a, b) => {
+      const da = a.date?.toMillis?.() ?? 0;
+      const db = b.date?.toMillis?.() ?? 0;
+      return da - db;
+    })
+    .slice(0, matchLimit);
 }
 
 export async function getLatestResults(clubId: string, matchLimit = 5): Promise<Match[]> {
-  try {
-    return await getDocuments<Match>(
-      "matches", where("clubId", "==", clubId), where("status", "==", "finished"),
-      orderBy("date", "desc"), limit(matchLimit)
-    );
-  } catch {
-    return [];
-  }
+  const data = await getDocuments<Match>(
+    "matches", where("clubId", "==", clubId), where("status", "==", "finished")
+  );
+  return data
+    .sort((a, b) => {
+      const da = a.date?.toMillis?.() ?? 0;
+      const db = b.date?.toMillis?.() ?? 0;
+      return db - da;
+    })
+    .slice(0, matchLimit);
 }
 
 export async function getMatch(id: string): Promise<Match | null> {
@@ -169,14 +173,25 @@ export async function getMatch(id: string): Promise<Match | null> {
 }
 
 export async function getNews(clubId: string): Promise<News[]> {
-  try {
-    return await getDocuments<News>(
-      "news", where("clubId", "==", clubId), where("published", "==", true),
-      orderBy("createdAt", "desc")
-    );
-  } catch {
-    return [];
-  }
+  const data = await getDocuments<News>(
+    "news", where("clubId", "==", clubId), where("published", "==", true)
+  );
+  return data.sort((a, b) => {
+    const da = a.createdAt?.toMillis?.() ?? 0;
+    const db = b.createdAt?.toMillis?.() ?? 0;
+    return db - da;
+  });
+}
+
+export async function getAdminNews(clubId: string): Promise<News[]> {
+  const data = await getDocuments<News>(
+    "news", where("clubId", "==", clubId)
+  );
+  return data.sort((a, b) => {
+    const da = a.createdAt?.toMillis?.() ?? 0;
+    const db = b.createdAt?.toMillis?.() ?? 0;
+    return db - da;
+  });
 }
 
 export async function getNewsItem(id: string): Promise<News | null> {
@@ -184,24 +199,22 @@ export async function getNewsItem(id: string): Promise<News | null> {
 }
 
 export async function getProducts(clubId: string): Promise<Product[]> {
-  try {
-    return await getDocuments<Product>(
-      "products", where("clubId", "==", clubId), where("active", "==", true),
-      orderBy("createdAt", "desc")
-    );
-  } catch {
-    return [];
-  }
+  const data = await getDocuments<Product>(
+    "products", where("clubId", "==", clubId), where("active", "==", true)
+  );
+  return data.sort((a, b) => {
+    const da = a.createdAt?.toMillis?.() ?? 0;
+    const db = b.createdAt?.toMillis?.() ?? 0;
+    return db - da;
+  });
 }
 
 export async function getSponsors(clubId: string): Promise<Sponsor[]> {
-  try {
-    return await getDocuments<Sponsor>(
-      "sponsors", where("clubId", "==", clubId), where("active", "==", true), orderBy("tier", "asc")
-    );
-  } catch {
-    return [];
-  }
+  const data = await getDocuments<Sponsor>(
+    "sponsors", where("clubId", "==", clubId), where("active", "==", true)
+  );
+  const tierOrder: Record<string, number> = { gold: 0, silver: 1, bronze: 2 };
+  return data.sort((a, b) => (tierOrder[a.tier] ?? 99) - (tierOrder[b.tier] ?? 99));
 }
 
 export async function getClubHistory(clubId: string): Promise<ClubHistory | null> {
@@ -216,32 +229,39 @@ export async function getClubHistory(clubId: string): Promise<ClubHistory | null
 }
 
 export async function getTimelineEvents(clubId: string): Promise<TimelineEvent[]> {
-  return getDocuments<TimelineEvent>(
-    "timeline_events", where("clubId", "==", clubId), orderBy("year", "asc")
+  const data = await getDocuments<TimelineEvent>(
+    "timeline_events", where("clubId", "==", clubId)
   );
+  return data.sort((a, b) => a.year - b.year);
 }
 
 export async function getAchievements(clubId: string): Promise<Achievement[]> {
-  return getDocuments<Achievement>(
-    "achievements", where("clubId", "==", clubId), orderBy("year", "desc")
+  const data = await getDocuments<Achievement>(
+    "achievements", where("clubId", "==", clubId)
   );
+  return data.sort((a, b) => b.year - a.year);
 }
 
 export async function getTeamStats(clubId: string): Promise<TeamStats | null> {
   try {
     const stats = await getDocuments<TeamStats>(
-      "team_stats", where("clubId", "==", clubId), orderBy("season", "desc"), limit(1)
+      "team_stats", where("clubId", "==", clubId)
     );
-    return stats[0] || null;
+    return stats.sort((a, b) => (b.season ?? "").localeCompare(a.season ?? ""))[0] || null;
   } catch {
     return null;
   }
 }
 
 export async function getMembers(clubId: string): Promise<Member[]> {
-  return getDocuments<Member>(
-    "members", where("clubId", "==", clubId), orderBy("createdAt", "desc")
+  const data = await getDocuments<Member>(
+    "members", where("clubId", "==", clubId)
   );
+  return data.sort((a, b) => {
+    const da = a.createdAt?.toMillis?.() ?? 0;
+    const db = b.createdAt?.toMillis?.() ?? 0;
+    return db - da;
+  });
 }
 
 export async function getAllClubs(): Promise<Club[]> {
@@ -272,12 +292,32 @@ export async function getUserDocument(uid: string): Promise<AppUser | null> {
   }
 }
 
-export async function getLNBStats(clubId: string): Promise<LNBPlayerStat[]> {
+export type ProballersPlayerStat = {
+  playerName: string;
+  height: string;
+  age: number;
+  pointsPerGame: number;
+  reboundsPerGame: number;
+  assistsPerGame: number;
+  gamesPlayed: number;
+  minutesPerGame: number;
+  threePointPct: number;
+  fieldGoalPct: number;
+  freeThrowPct: number;
+  stealsPerGame: number;
+  blocksPerGame: number;
+  turnovers: number;
+  fouls: number;
+  efficiency: number;
+  clubId: string;
+};
+
+export async function getProballersStats(clubId: string): Promise<ProballersPlayerStat[]> {
   try {
-    const docs = await getDocuments<LNBPlayerStat>(
-      "lnb_stats", where("clubId", "==", clubId), orderBy("pointsPerGame", "desc")
+    const docs = await getDocuments<ProballersPlayerStat>(
+      "proballers_stats", where("clubId", "==", clubId)
     );
-    return docs;
+    return docs.sort((a, b) => b.pointsPerGame - a.pointsPerGame);
   } catch {
     return [];
   }

@@ -375,17 +375,34 @@ export async function updateUserRole(uid: string, superadmin: boolean) {
   await updateDoc(doc(dbInstance, "users", uid), { "roles.superadmin": superadmin });
 }
 
-// ---- LNB Stats ----
-export async function saveLNBStats(
+// ---- Proballers Stats ----
+export async function saveProballersStats(
   clubId: string,
-  players: Array<{ playerName: string; teamName: string; position: string; gamesPlayed: number; minutesPerGame: number; pointsPerGame: number; reboundsPerGame: number; assistsPerGame: number; stealsPerGame: number; blocksPerGame: number; fieldGoalPct: number; threePointPct: number; freeThrowPct: number; efficiency: number }>
+  players: Array<{
+    playerName: string;
+    height: string;
+    age: number;
+    pointsPerGame: number;
+    reboundsPerGame: number;
+    assistsPerGame: number;
+    gamesPlayed: number;
+    minutesPerGame: number;
+    threePointPct: number;
+    fieldGoalPct: number;
+    freeThrowPct: number;
+    stealsPerGame: number;
+    blocksPerGame: number;
+    turnovers: number;
+    fouls: number;
+    efficiency: number;
+  }>
 ) {
   const dbInstance = await getDb();
   const batch = writeBatch(dbInstance);
-  const existing = await getDocs(query(collection(dbInstance, "lnb_stats"), where("clubId", "==", clubId)));
+  const existing = await getDocs(query(collection(dbInstance, "proballers_stats"), where("clubId", "==", clubId)));
   existing.forEach((d) => batch.delete(d.ref));
   for (const p of players) {
-    batch.set(doc(collection(dbInstance, "lnb_stats")), { ...p, clubId, scrapedAt: serverTimestamp() });
+    batch.set(doc(collection(dbInstance, "proballers_stats")), { ...p, clubId, scrapedAt: serverTimestamp() });
   }
   await batch.commit();
 }

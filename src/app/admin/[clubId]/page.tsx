@@ -13,13 +13,13 @@ export default async function AdminDashboard({
 
   const [teamStats, players, matches, members, news, products, sponsors] =
     await Promise.all([
-      getTeamStats(club.id),
-      getActivePlayers(club.id),
-      getMatches(club.id),
-      getMembers(club.id),
-      getNews(club.id),
-      getProducts(club.id),
-      getSponsors(club.id),
+      getTeamStats(clubId),
+      getActivePlayers(clubId),
+      getMatches(clubId),
+      getMembers(clubId),
+      getNews(clubId),
+      getProducts(clubId),
+      getSponsors(clubId),
     ]);
 
   const kpis = [

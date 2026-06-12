@@ -2,14 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { getClubBySlug, getAllUsers } from "@/lib/firebase/firestore";
-import { updateClub, updateUserClubs } from "@/lib/firebase/admin-fns";
+import { getClubBySlug, getAllUsers, getProballersStats } from "@/lib/firebase/firestore";
+import { updateClub, updateUserClubs, saveProballersStats } from "@/lib/firebase/admin-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import type { Club, AppUser } from "@/types";
+import type { ProballersPlayerStat } from "@/lib/firebase/firestore";
 import { toast } from "sonner";
+import { RefreshCw, Globe } from "lucide-react";
 
 export default function EditarClubPage() {
   const router = useRouter();
@@ -18,27 +20,62 @@ export default function EditarClubPage() {
   const [club, setClub] = useState<Club | null>(null);
   const [allUsers, setAllUsers] = useState<AppUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<string>("");
-  const [lnbTeamName, setLnbTeamName] = useState("");
+  const [proballersUrl, setProballersUrl] = useState("");
   const [saving, setSaving] = useState(false);
+  const [syncingProballers, setSyncingProballers] = useState(false);
+  const [proballersCount, setProballersCount] = useState<number | null>(null);
 
   useEffect(() => {
     if (!slug) return;
     getClubBySlug(slug).then((c) => {
-      if (c) { setClub(c); setLnbTeamName(c.lnbTeamName || ""); }
+      if (c) {
+        setClub(c);
+        setProballersUrl(c.proballersUrl || "");
+        loadStats(c.id);
+      }
     });
     getAllUsers().then(setAllUsers);
   }, [slug]);
+
+  const loadStats = async (clubId: string) => {
+    const prob = await getProballersStats(clubId);
+    setProballersCount(prob.length);
+  };
 
   const handleSave = async () => {
     if (!club) return;
     setSaving(true);
     try {
-      await updateClub(club.id, { lnbTeamName: lnbTeamName || "" });
+      await updateClub(club.id, { proballersUrl: proballersUrl || "" });
       toast.success("Club actualizado");
     } catch {
       toast.error("Error al guardar");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSyncProballers = async () => {
+    if (!club?.proballersUrl || !club) return;
+    setSyncingProballers(true);
+    try {
+      const res = await fetch("/api/proballers/scrape", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ proballersUrl: club.proballersUrl }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || "Error al obtener datos de Proballers");
+        return;
+      }
+      await saveProballersStats(club.id, data.players);
+      toast.success(`${data.count} jugadores importados desde Proballers`);
+      await loadStats(club.id);
+    } catch {
+      toast.error("Error de conexion con Proballers");
+    } finally {
+      setSyncingProballers(false);
     }
   };
 
@@ -67,29 +104,47 @@ export default function EditarClubPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Configuracion LNB</CardTitle>
+          <CardTitle>
+            <div className="flex items-center gap-2">
+              <Globe className="h-5 w-5" />
+              Proballers
+            </div>
+          </CardTitle>
           <CardDescription>
-            Conecta este club con la Liga Nacional de Basquetbol de Chile para obtener estadisticas automaticas.
+            Conecta este club con Proballers.com para obtener estadisticas detalladas de jugadores.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Nombre del equipo en LNB</Label>
+            <Label>URL del equipo en Proballers</Label>
             <Input
-              value={lnbTeamName}
-              onChange={(e) => setLnbTeamName(e.target.value)}
-              placeholder="Ej: Espanol de Osorno, CD Valdivia, etc."
+              value={proballersUrl}
+              onChange={(e) => setProballersUrl(e.target.value)}
+              placeholder="Ej: https://www.proballers.com/basketball/team/15651/cd-las-animas"
             />
             <p className="text-xs text-slate-400">
-              Debe coincidir exactamente con el nombre usado en{" "}
-              <a href="https://lnbchile.com/liga/uno/stats" target="_blank" className="text-cyan-600 hover:underline">
-                lnbchile.com/liga/uno/stats
+              URL de la pagina del equipo en{" "}
+              <a href="https://www.proballers.com" target="_blank" className="text-cyan-600 hover:underline">
+                proballers.com
               </a>
             </p>
           </div>
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? "Guardando..." : "Guardar"}
-          </Button>
+          <div className="flex items-center gap-4">
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? "Guardando..." : "Guardar"}
+            </Button>
+            {club.proballersUrl && (
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={handleSyncProballers} disabled={syncingProballers}>
+                  <RefreshCw className={`h-4 w-4 mr-1 ${syncingProballers ? "animate-spin" : ""}`} />
+                  {syncingProballers ? "Sincronizando..." : "Sincronizar Proballers"}
+                </Button>
+                {proballersCount !== null && (
+                  <span className="text-xs text-slate-400">{proballersCount} jugadores</span>
+                )}
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 

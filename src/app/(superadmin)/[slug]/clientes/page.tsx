@@ -118,7 +118,7 @@ export default async function SuperAdminClubes({
                         <Link href={`/${slug}/clientes/${club.slug}`} className="text-xs font-mono text-cyan-600 hover:underline">
                           Editar
                         </Link>
-                        <Link href={`/admin/${club.id}`} className="text-xs font-mono text-cyan-600 hover:underline">
+                        <Link href={`/admin/${club.slug}`} className="text-xs font-mono text-cyan-600 hover:underline">
                           Admin
                         </Link>
                         {club.published && (

@@ -1,38 +1,11 @@
 {
   "indexes": [
     {
-      "collectionGroup": "players",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "clubId", "order": "ASCENDING" },
-        { "fieldPath": "active", "order": "ASCENDING" },
-        { "fieldPath": "number", "order": "ASCENDING" }
-      ]
-    },
-    {
       "collectionGroup": "matches",
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "clubId", "order": "ASCENDING" },
-        { "fieldPath": "date", "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "matches",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "clubId", "order": "ASCENDING" },
-        { "fieldPath": "status", "order": "ASCENDING" },
-        { "fieldPath": "date", "order": "ASCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "matches",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "clubId", "order": "ASCENDING" },
-        { "fieldPath": "status", "order": "ASCENDING" },
-        { "fieldPath": "date", "order": "DESCENDING" }
+        { "fieldPath": "status", "order": "ASCENDING" }
       ]
     },
     {
@@ -40,8 +13,7 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "clubId", "order": "ASCENDING" },
-        { "fieldPath": "published", "order": "ASCENDING" },
-        { "fieldPath": "createdAt", "order": "DESCENDING" }
+        { "fieldPath": "published", "order": "ASCENDING" }
       ]
     },
     {
@@ -49,8 +21,7 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "clubId", "order": "ASCENDING" },
-        { "fieldPath": "active", "order": "ASCENDING" },
-        { "fieldPath": "createdAt", "order": "DESCENDING" }
+        { "fieldPath": "active", "order": "ASCENDING" }
       ]
     },
     {
@@ -58,48 +29,15 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "clubId", "order": "ASCENDING" },
-        { "fieldPath": "active", "order": "ASCENDING" },
-        { "fieldPath": "tier", "order": "ASCENDING" }
+        { "fieldPath": "active", "order": "ASCENDING" }
       ]
     },
     {
-      "collectionGroup": "player_stats",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "playerId", "order": "ASCENDING" },
-        { "fieldPath": "season", "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "timeline_events",
+      "collectionGroup": "players",
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "clubId", "order": "ASCENDING" },
-        { "fieldPath": "year", "order": "ASCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "achievements",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "clubId", "order": "ASCENDING" },
-        { "fieldPath": "year", "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "members",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "clubId", "order": "ASCENDING" },
-        { "fieldPath": "createdAt", "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "lnb_stats",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "clubId", "order": "ASCENDING" },
-        { "fieldPath": "pointsPerGame", "order": "DESCENDING" }
+        { "fieldPath": "active", "order": "ASCENDING" }
       ]
     }
   ],

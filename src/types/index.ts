@@ -17,7 +17,7 @@ export type Club = {
   facebook: string;
   website: string;
   foundationDate: Timestamp;
-  lnbTeamName?: string;
+  proballersUrl?: string;
   colors: {
     primary: string;
     secondary: string;
@@ -289,20 +289,4 @@ export type AppUser = {
     createdAt: Timestamp;
   };
 
-export type LNBPlayerStat = {
-  playerName: string;
-  teamName: string;
-  position: string;
-  gamesPlayed: number;
-  minutesPerGame: number;
-  pointsPerGame: number;
-  reboundsPerGame: number;
-  assistsPerGame: number;
-  stealsPerGame: number;
-  blocksPerGame: number;
-  fieldGoalPct: number;
-  threePointPct: number;
-  freeThrowPct: number;
-  efficiency: number;
-};
 

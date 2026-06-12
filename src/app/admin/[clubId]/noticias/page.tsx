@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createNews, updateNews, deleteNews } from "@/lib/firebase/admin-fns";
-import { getNews } from "@/lib/firebase/firestore";
+import { getAdminNews } from "@/lib/firebase/firestore";
 import type { News } from "@/types";
 import { toast } from "sonner";
 import { useDemoMode } from "@/lib/demo-mode";
@@ -49,7 +49,7 @@ export default function AdminNoticiasPage({ params }: AdminNoticiasPageProps) {
   }, [params]);
 
   const loadNews = async (id: string) => {
-    const data = await getNews(id);
+    const data = await getAdminNews(id);
     setNews(data);
   };
 
