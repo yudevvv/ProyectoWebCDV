@@ -191,11 +191,12 @@ export async function createSponsor(
     contributionType: (data as any).contributionType ?? "monetario",
     contributionAmount: (data as any).contributionAmount ?? 0,
     contributionCurrency: (data as any).contributionCurrency ?? "CLP",
-    complianceStatus: "pendiente",
-    complianceNotes: "",
+    complianceStatus: (data as any).complianceStatus ?? "pendiente",
+    complianceNotes: (data as any).complianceNotes ?? "",
     clubId,
     active: true,
-    startDate: serverTimestamp(),
+    startDate: (data as any).startDate ?? serverTimestamp(),
+    endDate: (data as any).endDate ?? undefined,
     impressions: 0,
     clicks: 0,
     ctr: 0,
@@ -221,7 +222,7 @@ export async function deleteSponsor(id: string) {
 // ---- Members ----
 export async function createMember(
   clubId: string,
-  data: Pick<Member, "name" | "rut" | "email" | "phone" | "membershipType" | "monthlyAmount">
+  data: Pick<Member, "name" | "rut" | "email" | "phone" | "membershipType" | "monthlyAmount"> & { startDate?: any; endDate?: any }
 ) {
   const dbInstance = await getDb();
   const docRef = await addDoc(collection(dbInstance, "members"), {
@@ -229,7 +230,8 @@ export async function createMember(
     address: "",
     status: "approved",
     totalPaid: 0,
-    startDate: serverTimestamp(),
+    startDate: (data as any).startDate ?? serverTimestamp(),
+    endDate: (data as any).endDate ?? undefined,
     clubId,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),

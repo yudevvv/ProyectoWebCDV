@@ -15,9 +15,12 @@ import {
 } from "@/components/ui/select";
 import { createSponsor, updateSponsor, deleteSponsor } from "@/lib/firebase/admin-fns";
 import { getSponsors } from "@/lib/firebase/firestore";
+import { useClub } from "@/hooks/useFirestore";
 import type { Sponsor, ContributionType } from "@/types";
+import { Timestamp } from "firebase/firestore";
 import { toast } from "sonner";
 import { useDemoMode } from "@/lib/demo-mode";
+import { FileDown } from "lucide-react";
 
 const tierColors: Record<string, string> = {
   gold: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
@@ -31,6 +34,21 @@ const complianceColors: Record<string, string> = {
   incumplido: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
 };
 
+function dateToTimestamp(dateStr: string) {
+  if (!dateStr) return undefined;
+  return Timestamp.fromDate(new Date(dateStr));
+}
+
+function timestampToDateStr(ts: Timestamp | undefined | null) {
+  if (!ts) return "";
+  return new Date(ts.seconds * 1000).toISOString().split("T")[0];
+}
+
+function isExpired(ts: Timestamp | undefined | null) {
+  if (!ts) return false;
+  return new Date(ts.seconds * 1000) < new Date();
+}
+
 type SponsorFormData = {
   name: string;
   logo: string;
@@ -42,12 +60,15 @@ type SponsorFormData = {
   contributionCurrency: "CLP" | "USD";
   complianceStatus: Sponsor["complianceStatus"];
   complianceNotes: string;
+  startDate: string;
+  endDate: string;
 };
 
 const defaultForm: SponsorFormData = {
   name: "", logo: "", website: "", tier: "bronze", description: "",
   contributionType: "monetario", contributionAmount: 0, contributionCurrency: "CLP",
   complianceStatus: "pendiente", complianceNotes: "",
+  startDate: "", endDate: "",
 };
 
 type AdminAuspiciadoresPageProps = {
@@ -62,6 +83,7 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
   const [form, setForm] = useState<SponsorFormData>(defaultForm);
   const [loading, setLoading] = useState(false);
   const { isDemo, guard } = useDemoMode(clubId ?? "");
+  const { data: club } = useClub(clubId ?? "");
 
   useEffect(() => {
     params.then((p) => {
@@ -81,16 +103,24 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
     if (!clubId) return;
     setLoading(true);
     try {
+      const payload = {
+        ...form,
+        startDate: dateToTimestamp(form.startDate),
+        endDate: form.endDate ? dateToTimestamp(form.endDate) : undefined,
+      };
       if (editingSponsor) {
-        await updateSponsor(editingSponsor.id, form);
+        await updateSponsor(editingSponsor.id, payload);
         toast.success("Auspiciador actualizado");
       } else {
-        await createSponsor(clubId, form);
+        await createSponsor(clubId, payload);
         toast.success("Auspiciador creado");
       }
       setDialogOpen(false);
       await loadSponsors(clubId);
-    } catch { toast.error("Error al guardar"); }
+    } catch (e) {
+      console.error(e);
+      toast.error("Error al guardar");
+    }
     finally { setLoading(false); }
   };
 
@@ -105,6 +135,70 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
   const totalContributions = sponsors
     .filter((s) => s.active && s.contributionType === "monetario")
     .reduce((sum, s) => sum + (s.contributionAmount || 0), 0);
+
+  const downloadReport = async () => {
+    const { default: jsPDF } = await import("jspdf");
+    const doc = new jsPDF();
+    if (club?.logo) {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = club.logo;
+      await new Promise((resolve) => { img.onload = resolve; });
+      doc.addImage(img, "PNG", 80, 10, 50, 20);
+    }
+    doc.setFontSize(18);
+    doc.text("Informe de Auspiciadores", 105, 45, { align: "center" });
+    doc.setFontSize(12);
+    doc.text(`Club: ${club?.name ?? ""}`, 105, 55, { align: "center" });
+    doc.setFontSize(10);
+    doc.text(`Generado: ${new Date().toLocaleDateString("es-CL")}`, 105, 62, { align: "center" });
+    doc.text(`Total auspiciadores: ${sponsors.length}`, 105, 69, { align: "center" });
+    doc.text(`Aporte total monetario: $${totalContributions.toLocaleString("es-CL")}`, 105, 76, { align: "center" });
+
+    let y = 92;
+    doc.setFontSize(8);
+    doc.text("Nombre", 12, y);
+    doc.text("Categoria", 52, y);
+    doc.text("Aporte", 72, y);
+    doc.text("Inicio", 100, y);
+    doc.text("Fin", 122, y);
+    doc.text("Cumplimiento", 142, y);
+    y += 5;
+    doc.setDrawColor(200);
+    doc.line(12, y - 1, 198, y - 1);
+
+    for (const s of sponsors) {
+      if (y > 275) { doc.addPage(); y = 20; }
+      doc.text(s.name.substring(0, 20), 12, y);
+      doc.text(s.tier, 52, y);
+      if (s.contributionType === "monetario") {
+        doc.text(`$${(s.contributionAmount || 0).toLocaleString("es-CL")}`, 72, y);
+      } else {
+        doc.text(s.contributionType, 72, y);
+      }
+      doc.text(s.startDate ? new Date(s.startDate.seconds * 1000).toLocaleDateString("es-CL") : "—", 100, y);
+      doc.text(s.endDate ? new Date(s.endDate.seconds * 1000).toLocaleDateString("es-CL") : "—", 122, y);
+      doc.text(s.complianceStatus === "cumpliendo" ? "Cumpliendo" : s.complianceStatus === "incumplido" ? "Incumplido" : "Pendiente", 142, y);
+      y += 5;
+    }
+    doc.save(`auspiciadores-${club?.slug || clubId}.pdf`);
+  };
+
+  function computeStatus(sp: Sponsor): Sponsor["complianceStatus"] {
+    if (sp.complianceStatus === "incumplido") return "incumplido";
+    if (!sp.startDate) return sp.complianceStatus || "pendiente";
+    const now = new Date();
+    const start = new Date(sp.startDate.seconds * 1000);
+    if (now < start) return "pendiente";
+    if (sp.endDate) {
+      const end = new Date(sp.endDate.seconds * 1000);
+      if (now > end) {
+        return sp.complianceStatus === "cumpliendo" ? "cumpliendo" : "incumplido";
+      }
+    }
+    if (sp.complianceStatus === "pendiente") return "cumpliendo";
+    return sp.complianceStatus;
+  }
 
   const columns = [
     { key: "name", header: "Nombre", render: (s: Sponsor) => <span className="font-medium">{s.name}</span> },
@@ -124,16 +218,27 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
       },
     },
     {
+      key: "plazo",
+      header: "Plazo",
+      render: (s: Sponsor) => {
+        const start = s.startDate ? new Date(s.startDate.seconds * 1000).toLocaleDateString("es-CL") : "—";
+        const end = s.endDate ? new Date(s.endDate.seconds * 1000).toLocaleDateString("es-CL") : "∞";
+        return <span className="text-xs text-muted-foreground">{start} → {end}</span>;
+      },
+    },
+    {
       key: "compliance",
       header: "Cumplimiento",
-      render: (s: Sponsor) => (
-        <Badge className={complianceColors[s.complianceStatus || "pendiente"]}>
-          {s.complianceStatus === "cumpliendo" ? "Cumpliendo" : s.complianceStatus === "incumplido" ? "Incumplido" : "Pendiente"}
-        </Badge>
-      ),
+      render: (s: Sponsor) => {
+        const status = computeStatus(s);
+        return (
+          <Badge className={complianceColors[status]}>
+            {status === "cumpliendo" ? "Cumpliendo" : status === "incumplido" ? "Incumplido" : "Pendiente"}
+          </Badge>
+        );
+      },
     },
     { key: "website", header: "Sitio", render: (s: Sponsor) => s.website ? <a href={s.website} target="_blank" className="text-primary hover:underline text-sm">{s.website}</a> : "—" },
-    { key: "impressions", header: "Impresiones", render: (s: Sponsor) => s.impressions.toLocaleString() },
   ];
 
   if (!clubId) return <div className="flex flex-col min-h-screen"><AdminNav clubId="" /><div className="container mx-auto px-4 py-12"><p className="text-muted-foreground">Cargando...</p></div></div>;
@@ -149,13 +254,18 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
               {sponsors.filter((s) => s.active).length} activos &middot; Aporte total: ${totalContributions.toLocaleString("es-CL")}
             </p>
           </div>
-          <Button
-            onClick={() => { setEditingSponsor(null); setForm(defaultForm); setDialogOpen(true); }}
-            disabled={isDemo}
-            className="font-semibold shadow-sm"
-          >
-            + Agregar Auspiciador
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={downloadReport} disabled={sponsors.length === 0}>
+              <FileDown className="h-4 w-4 mr-1" /> Informe
+            </Button>
+            <Button
+              onClick={() => { setEditingSponsor(null); setForm(defaultForm); setDialogOpen(true); }}
+              disabled={isDemo}
+              className="font-semibold shadow-sm"
+            >
+              + Agregar Auspiciador
+            </Button>
+          </div>
         </div>
 
         <DataTable
@@ -172,6 +282,8 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
               contributionCurrency: s.contributionCurrency || "CLP",
               complianceStatus: s.complianceStatus || "pendiente",
               complianceNotes: s.complianceNotes || "",
+              startDate: timestampToDateStr(s.startDate),
+              endDate: timestampToDateStr(s.endDate),
             });
             setDialogOpen(true);
           }}
@@ -244,6 +356,16 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
               <div className="space-y-2">
                 <Label>Descripción</Label>
                 <textarea className="flex min-h-[60px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Fecha de inicio (plazo)</Label>
+                  <Input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Fecha de término</Label>
+                  <Input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
