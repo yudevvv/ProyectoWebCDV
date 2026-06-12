@@ -5,7 +5,7 @@ import { useCallback } from "react";
 const DEMO_EMAIL = "demo@toalesco.cl";
 
 function getDemoClubSlug(): string {
-  return process.env.NEXT_PUBLIC_DEMO_CLUB_SLUG || "cdla";
+  return process.env.NEXT_PUBLIC_DEMO_CLUB_SLUG || "demo-club";
 }
 
 export function useDemoMode(clubSlug?: string) {
