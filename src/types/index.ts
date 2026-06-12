@@ -185,6 +185,9 @@ export type Member = {
   birthDate?: Timestamp;
   membershipType: "basic" | "premium" | "vip";
   status: MemberStatus;
+  monthlyAmount: number;
+  totalPaid: number;
+  lastPayment?: Timestamp;
   startDate: Timestamp;
   endDate?: Timestamp;
   notes?: string;
@@ -229,6 +232,7 @@ export type Product = {
 };
 
 export type SponsorTier = "gold" | "silver" | "bronze";
+export type ContributionType = "monetario" | "servicio" | "producto";
 
 export type Sponsor = {
   id: string;
@@ -238,6 +242,11 @@ export type Sponsor = {
   website: string;
   tier: SponsorTier;
   description?: string;
+  contributionType: ContributionType;
+  contributionAmount: number;
+  contributionCurrency: "CLP" | "USD";
+  complianceStatus: "pendiente" | "cumpliendo" | "incumplido";
+  complianceNotes?: string;
   active: boolean;
   startDate: Timestamp;
   endDate?: Timestamp;

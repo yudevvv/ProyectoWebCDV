@@ -83,10 +83,23 @@ function AdminConfigForm({ clubId }: { clubId: string }) {
     }
   };
 
+  function isTooLight(hex: string) {
+    const c = hex.replace("#", "");
+    const r = parseInt(c.substring(0, 2), 16);
+    const g = parseInt(c.substring(2, 4), 16);
+    const b = parseInt(c.substring(4, 6), 16);
+    const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+    return luminance > 230;
+  }
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     if (!club) return;
+    if (isTooLight(form.primaryColor)) {
+      toast.error("El color primario no puede ser blanco o muy claro. Elige un color mas oscuro.");
+      return;
+    }
     setSaving(true);
     try {
       const social: Record<string, string> = {};

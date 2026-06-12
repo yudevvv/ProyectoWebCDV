@@ -85,7 +85,7 @@ export default async function AdminDashboard({
 
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
-            <CardHeader style={{ borderTop: `3px solid ${club.colors.primary}` }}>
+            <CardHeader>
               <CardTitle style={{ color: club.colors.primary }}>Accesos Rápidos</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
@@ -128,7 +128,7 @@ export default async function AdminDashboard({
 
           {teamStats && (
             <Card>
-              <CardHeader style={{ borderTop: `3px solid ${club.colors.secondary}` }}>
+              <CardHeader>
                 <CardTitle style={{ color: club.colors.secondary }}>Rendimiento del Equipo</CardTitle>
               </CardHeader>
               <CardContent>

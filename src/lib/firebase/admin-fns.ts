@@ -188,8 +188,14 @@ export async function createSponsor(
     logo: data.logo ?? "",
     website: data.website ?? "",
     description: data.description ?? "",
+    contributionType: (data as any).contributionType ?? "monetario",
+    contributionAmount: (data as any).contributionAmount ?? 0,
+    contributionCurrency: (data as any).contributionCurrency ?? "CLP",
+    complianceStatus: "pendiente",
+    complianceNotes: "",
     clubId,
     active: true,
+    startDate: serverTimestamp(),
     impressions: 0,
     clicks: 0,
     ctr: 0,
@@ -213,6 +219,24 @@ export async function deleteSponsor(id: string) {
 }
 
 // ---- Members ----
+export async function createMember(
+  clubId: string,
+  data: Pick<Member, "name" | "rut" | "email" | "phone" | "membershipType" | "monthlyAmount">
+) {
+  const dbInstance = await getDb();
+  const docRef = await addDoc(collection(dbInstance, "members"), {
+    ...data,
+    address: "",
+    status: "approved",
+    totalPaid: 0,
+    startDate: serverTimestamp(),
+    clubId,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return docRef.id;
+}
+
 export async function updateMember(id: string, data: Partial<Member>) {
   const dbInstance = await getDb();
   await updateDoc(doc(dbInstance, "members", id), {
