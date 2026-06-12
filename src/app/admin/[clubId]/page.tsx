@@ -111,6 +111,15 @@ export default async function AdminDashboard({
               >
                 👥 Ver socios
               </a>
+              {club.published && (
+                <a
+                  href={`/clubes/${club.slug}`}
+                  target="_blank"
+                  className="block p-3 rounded-lg hover:bg-muted transition-colors text-sm font-medium text-cyan-600"
+                >
+                  🌐 Ir al sitio web
+                </a>
+              )}
             </CardContent>
           </Card>
 
