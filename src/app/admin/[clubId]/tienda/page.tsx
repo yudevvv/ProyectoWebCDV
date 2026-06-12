@@ -29,7 +29,12 @@ export default function AdminTiendaPage({ params }: AdminTiendaPageProps) {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [form, setForm] = useState({ name: "", description: "", price: 0, stock: 0, category: "clothing" as Product["category"], sku: "", images: [] as string[] });
   const [loading, setLoading] = useState(false);
-  const { isDemo, guard } = useDemoMode(clubId ?? "");
+  const { isDemo } = useDemoMode(clubId ?? "");
+
+  const loadProducts = async (id: string) => {
+    const data = await getProducts(id);
+    setProducts(data);
+  };
 
   useEffect(() => {
     params.then((p) => {
@@ -37,11 +42,6 @@ export default function AdminTiendaPage({ params }: AdminTiendaPageProps) {
       loadProducts(p.clubId);
     });
   }, [params]);
-
-  const loadProducts = async (id: string) => {
-    const data = await getProducts(id);
-    setProducts(data);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

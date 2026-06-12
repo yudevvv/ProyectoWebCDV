@@ -30,13 +30,10 @@ export function PollCard({ clubId }: PollCardProps) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    loadPolls();
+    getActivePolls(clubId).then((data) => {
+      setPolls(data as Poll[]);
+    });
   }, [clubId]);
-
-  const loadPolls = async () => {
-    const data = await getActivePolls(clubId);
-    setPolls(data as Poll[]);
-  };
 
   const handleVote = async (pollId: string, optionId: string) => {
     setLoading(true);

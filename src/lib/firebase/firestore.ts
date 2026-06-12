@@ -1,12 +1,11 @@
 import {
   collection,
-  doc,
-  getDoc,
-  getDocs,
   query,
   where,
   orderBy,
-  limit,
+  getDocs,
+  getDoc,
+  doc,
   type QueryConstraint,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";

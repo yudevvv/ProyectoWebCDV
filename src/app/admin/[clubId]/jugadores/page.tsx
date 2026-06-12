@@ -5,7 +5,6 @@ import { AdminNav } from "@/components/admin/AdminNav";
 import { DataTable } from "@/components/admin/DataTable";
 import { PlayerDialog, type PlayerFormData } from "@/components/admin/PlayerDialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { createPlayer, updatePlayer, deletePlayer } from "@/lib/firebase/admin-fns";
 import { getActivePlayers } from "@/lib/firebase/firestore";
 import type { Player } from "@/types";
@@ -23,7 +22,12 @@ export default function AdminJugadoresPage({
   const [players, setPlayers] = useState<Player[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
-  const { isDemo, guard } = useDemoMode(clubId ?? "");
+  const { isDemo } = useDemoMode(clubId ?? "");
+
+  const loadPlayers = async (id: string) => {
+    const data = await getActivePlayers(id);
+    setPlayers(data);
+  };
 
   useEffect(() => {
     params.then((p) => {
@@ -31,11 +35,6 @@ export default function AdminJugadoresPage({
       loadPlayers(p.clubId);
     });
   }, [params]);
-
-  const loadPlayers = async (id: string) => {
-    const data = await getActivePlayers(id);
-    setPlayers(data);
-  };
 
   const handleCreate = async (data: PlayerFormData) => {
     if (!clubId) return;
@@ -95,9 +94,9 @@ export default function AdminJugadoresPage({
       key: "status",
       header: "Estado",
       render: (p: Player) => (
-        <Badge variant={p.active ? "default" : "secondary"}>
+        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${p.active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
           {p.active ? "Activo" : "Inactivo"}
-        </Badge>
+        </span>
       ),
     },
   ];

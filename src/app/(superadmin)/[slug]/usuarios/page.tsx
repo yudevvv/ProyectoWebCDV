@@ -1,18 +1,14 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { useParams } from "next/navigation";
-import { getAllUsers, getAllClubs } from "@/lib/firebase/firestore";
-import { updateUserClubs, updateUserRole } from "@/lib/firebase/admin-fns";
+import { useEffect, useState } from "react";
+import { getAllUsers, getAllClubs, getUserDocument } from "@/lib/firebase/firestore";
+import { updateUserClubs, updateUserRole, createUserDocument } from "@/lib/firebase/admin-fns";
 import type { AppUser, Club, UserRole } from "@/types";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { createUserDocument } from "@/lib/firebase/admin-fns";
-import { getUserDocument } from "@/lib/firebase/firestore";
 
 export default function SuperAdminUsuarios() {
-  const params = useParams();
   const [users, setUsers] = useState<AppUser[]>([]);
   const [clubs, setClubs] = useState<Club[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,15 +20,10 @@ export default function SuperAdminUsuarios() {
   const [newEmail, setNewEmail] = useState("");
   const [syncing, setSyncing] = useState(false);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    const [u, c] = await Promise.all([getAllUsers(), getAllClubs()]);
-    setUsers(u);
-    setClubs(c);
-    setLoading(false);
+  useEffect(() => {
+    getAllUsers().then(setUsers);
+    getAllClubs().then(setClubs).finally(() => setLoading(false));
   }, []);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
 
   const clubMap = new Map(clubs.map((c) => [c.id, c]));
 
@@ -48,7 +39,7 @@ export default function SuperAdminUsuarios() {
       toast.success("Usuario sincronizado");
       setNewUid("");
       setNewEmail("");
-      fetchData();
+      Promise.all([getAllUsers(), getAllClubs()]).then(([u, c]) => { setUsers(u); setClubs(c); });
     } catch { toast.error("Error al sincronizar"); }
     finally { setSyncing(false); }
   };

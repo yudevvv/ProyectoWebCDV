@@ -31,22 +31,35 @@ export function MVPVotingSection({
   >([]);
   const [showResults, setShowResults] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  // Check if voting is still open (LIVE or within 5 min of FINISHED)
-  const votingOpen = matchStatus === "live" || (matchStatus === "finished" && matchEndedAt && (Date.now() - matchEndedAt.getTime()) < 5 * 60 * 1000);
+  const [votingOpen, setVotingOpen] = useState(false);
   const isLive = matchStatus === "live";
 
   useEffect(() => {
-    if (matchStatus === "finished") {
-      loadResults();
-    }
-  }, [matchStatus]);
+    const check = () => {
+      setVotingOpen(
+        matchStatus === "live" ||
+        (matchStatus === "finished" && !!matchEndedAt && (Date.now() - matchEndedAt.getTime()) < 5 * 60 * 1000)
+      );
+    };
+    check();
+    const interval = setInterval(check, 5000);
+    return () => clearInterval(interval);
+  }, [matchStatus, matchEndedAt]);
 
   const loadResults = async () => {
     const r = await getMVPResults(matchId, players);
     setResults(r);
     setShowResults(true);
   };
+
+  useEffect(() => {
+    if (matchStatus === "finished") {
+      getMVPResults(matchId, players).then((r) => {
+        setResults(r);
+        setShowResults(true);
+      });
+    }
+  }, [matchStatus]);
 
   const handleVote = async (playerId: string) => {
     setLoading(true);

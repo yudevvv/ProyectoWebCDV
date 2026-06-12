@@ -1,13 +1,6 @@
-import { Check, Building2, Users, Calendar, ShoppingBag, Trophy, BarChart3, DollarSign, Zap, Smartphone, Globe, Shield, Server, Code, ArrowRight, Sparkles, Loader2, ChevronRight } from "lucide-react";
+import { Building2, Users, ShoppingBag, Trophy, BarChart3, DollarSign, Globe, Shield, Server, Code, ArrowRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/landing/Navbar";
-
-const metrics = [
-  { value: "+5000", label: "Hinchas potenciales conectados" },
-  { value: "+100", label: "Módulos desarrollados" },
-  { value: "24/7", label: "Acceso desde cualquier lugar" },
-  { value: "100%", label: "Personalizable" },
-];
 
 const problems = [
   { icon: Building2, title: "Gestión desordenada", description: "Socios, jugadores y pagos distribuidos entre Excel, WhatsApp y documentos." },
@@ -23,11 +16,6 @@ const modules = [
   { icon: Shield, title: "Patrocinadores", features: ["Espacios publicitarios", "Estadísticas de visibilidad", "Gestión de auspiciadores"] },
   { icon: ShoppingBag, title: "Tienda Online", features: ["Venta de productos", "Control de stock", "Promociones"] },
   { icon: BarChart3, title: "Estadísticas Deportivas", features: ["Jugadores", "Equipos", "Temporadas", "Historial"] },
-];
-
-const stellarFeatures = [
-  "Registro de contratos", "Historial salarial", "Fechas de renovación", "Bonificaciones",
-  "Incentivos por rendimiento", "Alertas de vencimiento", "Control de pagos", "Exportación de reportes",
 ];
 
 const allServices = [
@@ -404,7 +392,7 @@ export default function HomePage() {
             <div className="flex items-center gap-3 flex-wrap justify-center">
               <a href="#servicios" className="text-[10px] font-mono font-medium text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">[Servicios]</a>
               <a href="#clubes" className="text-[10px] font-mono font-medium text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">[Clubes]</a>
-              <a href="/demo" className="text-[10px] font-mono font-medium text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">[Demo]</a>
+              <Link href="/demo" className="text-[10px] font-mono font-medium text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">[Demo]</Link>
               <a href="mailto:toalesco@tutamail.com" className="text-[10px] font-mono font-medium text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">[Contacto]</a>
             </div>
             <p className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500">

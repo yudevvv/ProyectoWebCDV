@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { getClubBySlug, getAllUsers, getProballersStats } from "@/lib/firebase/firestore";
 import { updateClub, updateUserClubs, saveProballersStats } from "@/lib/firebase/admin-fns";
 import { Button } from "@/components/ui/button";
@@ -9,12 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import type { Club, AppUser } from "@/types";
-import type { ProballersPlayerStat } from "@/lib/firebase/firestore";
 import { toast } from "sonner";
 import { RefreshCw, Globe } from "lucide-react";
 
 export default function EditarClubPage() {
-  const router = useRouter();
   const params = useParams();
   const slug = params?.clubId as string;
   const [club, setClub] = useState<Club | null>(null);
@@ -24,6 +22,11 @@ export default function EditarClubPage() {
   const [saving, setSaving] = useState(false);
   const [syncingProballers, setSyncingProballers] = useState(false);
   const [proballersCount, setProballersCount] = useState<number | null>(null);
+
+  const loadStats = async (clubId: string) => {
+    const prob = await getProballersStats(clubId);
+    setProballersCount(prob.length);
+  };
 
   useEffect(() => {
     if (!slug) return;
@@ -36,11 +39,6 @@ export default function EditarClubPage() {
     });
     getAllUsers().then(setAllUsers);
   }, [slug]);
-
-  const loadStats = async (clubId: string) => {
-    const prob = await getProballersStats(clubId);
-    setProballersCount(prob.length);
-  };
 
   const handleSave = async () => {
     if (!club) return;

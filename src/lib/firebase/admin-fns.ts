@@ -11,7 +11,8 @@ import {
   where,
   getDocs,
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { Timestamp } from "firebase/firestore";
 import { db, storage } from "@/lib/firebase/client";
 import type {
   Club,
@@ -192,15 +193,15 @@ export async function createSponsor(
     logo: data.logo ?? "",
     website: data.website ?? "",
     description: data.description ?? "",
-    contributionType: (data as any).contributionType ?? "monetario",
-    contributionAmount: (data as any).contributionAmount ?? 0,
-    contributionCurrency: (data as any).contributionCurrency ?? "CLP",
-    complianceStatus: (data as any).complianceStatus ?? "pendiente",
-    complianceNotes: (data as any).complianceNotes ?? "",
+    contributionType: data.contributionType ?? "monetario",
+    contributionAmount: data.contributionAmount ?? 0,
+    contributionCurrency: data.contributionCurrency ?? "CLP",
+    complianceStatus: data.complianceStatus ?? "pendiente",
+    complianceNotes: data.complianceNotes ?? "",
     clubId,
     active: true,
-    startDate: (data as any).startDate ?? serverTimestamp(),
-    endDate: (data as any).endDate ?? undefined,
+    startDate: data.startDate ?? serverTimestamp(),
+    endDate: data.endDate ?? undefined,
     impressions: 0,
     clicks: 0,
     ctr: 0,
@@ -226,7 +227,7 @@ export async function deleteSponsor(id: string) {
 // ---- Members ----
 export async function createMember(
   clubId: string,
-  data: Pick<Member, "name" | "rut" | "email" | "phone" | "membershipType" | "monthlyAmount"> & { startDate?: any; endDate?: any }
+  data: Pick<Member, "name" | "rut" | "email" | "phone" | "membershipType" | "monthlyAmount"> & { startDate?: Timestamp; endDate?: Timestamp }
 ) {
   const dbInstance = await getDb();
   const docRef = await addDoc(collection(dbInstance, "members"), {
@@ -234,8 +235,8 @@ export async function createMember(
     address: "",
     status: "approved",
     totalPaid: 0,
-    startDate: (data as any).startDate ?? serverTimestamp(),
-    endDate: (data as any).endDate ?? undefined,
+    startDate: data.startDate ?? serverTimestamp(),
+    endDate: data.endDate ?? undefined,
     clubId,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),

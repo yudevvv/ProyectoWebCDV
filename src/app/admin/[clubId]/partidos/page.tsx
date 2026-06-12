@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { DataTable } from "@/components/admin/DataTable";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
 import {
   Dialog,
   DialogContent,
@@ -68,7 +68,12 @@ export default function AdminPartidosPage({ params }: AdminPartidosPageProps) {
     competition: "", homeScore: 0, awayScore: 0,
   });
   const [loading, setLoading] = useState(false);
-  const { isDemo, guard } = useDemoMode(clubId ?? "");
+  const { isDemo } = useDemoMode(clubId ?? "");
+
+  const loadMatches = async (id: string) => {
+    const data = await getMatches(id);
+    setMatches(data);
+  };
 
   useEffect(() => {
     params.then((p) => {
@@ -76,11 +81,6 @@ export default function AdminPartidosPage({ params }: AdminPartidosPageProps) {
       loadMatches(p.clubId);
     });
   }, [params]);
-
-  const loadMatches = async (id: string) => {
-    const data = await getMatches(id);
-    setMatches(data);
-  };
 
   const openCreate = () => {
     setEditingMatch(null);
@@ -170,7 +170,7 @@ export default function AdminPartidosPage({ params }: AdminPartidosPageProps) {
       key: "status",
       header: "Estado",
       render: (m: Match) => (
-        <Badge className={statusColors[m.status]}>{statusLabels[m.status]}</Badge>
+        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[m.status]}`}>{statusLabels[m.status]}</span>
       ),
     },
     {

@@ -15,25 +15,23 @@ export function useTheme() {
   return useContext(ThemeContext);
 }
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
+function getInitialTheme(): Theme {
+  if (typeof window === "undefined") return "light";
+  try {
     const stored = localStorage.getItem("toalesco-theme") as Theme | null;
-    if (stored) {
-      setTheme(stored);
-    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      setTheme("dark");
-    }
-    setMounted(true);
-  }, []);
+    if (stored === "light" || stored === "dark") return stored;
+  } catch {}
+  if (window.matchMedia("(prefers-color-scheme: dark)").matches) return "dark";
+  return "light";
+}
+
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const [theme, setTheme] = useState<Theme>(getInitialTheme);
 
   useEffect(() => {
-    if (!mounted) return;
     document.documentElement.classList.toggle("dark", theme === "dark");
     localStorage.setItem("toalesco-theme", theme);
-  }, [theme, mounted]);
+  }, [theme]);
 
   const toggle = () => setTheme((t) => (t === "light" ? "dark" : "light"));
 

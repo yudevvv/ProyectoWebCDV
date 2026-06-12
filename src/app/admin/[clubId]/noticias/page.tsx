@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { DataTable } from "@/components/admin/DataTable";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { createNews, updateNews, deleteNews } from "@/lib/firebase/admin-fns";
 import { getAdminNews } from "@/lib/firebase/firestore";
 import type { News } from "@/types";
@@ -39,7 +40,12 @@ export default function AdminNoticiasPage({ params }: AdminNoticiasPageProps) {
   const [editingNews, setEditingNews] = useState<News | null>(null);
   const [form, setForm] = useState({ title: "", excerpt: "", content: "", author: "", coverImage: "", published: false });
   const [loading, setLoading] = useState(false);
-  const { isDemo, guard } = useDemoMode(clubId ?? "");
+  const { isDemo } = useDemoMode(clubId ?? "");
+
+  const loadNews = async (id: string) => {
+    const data = await getAdminNews(id);
+    setNews(data);
+  };
 
   useEffect(() => {
     params.then((p) => {
@@ -47,11 +53,6 @@ export default function AdminNoticiasPage({ params }: AdminNoticiasPageProps) {
       loadNews(p.clubId);
     });
   }, [params]);
-
-  const loadNews = async (id: string) => {
-    const data = await getAdminNews(id);
-    setNews(data);
-  };
 
   const openCreate = () => {
     setEditingNews(null);
@@ -139,9 +140,9 @@ export default function AdminNoticiasPage({ params }: AdminNoticiasPageProps) {
       key: "published",
       header: "Estado",
       render: (n: News) => (
-        <Badge variant={n.published ? "default" : "secondary"}>
+        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${n.published ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
           {n.published ? "Publicada" : "Borrador"}
-        </Badge>
+        </span>
       ),
     },
   ];

@@ -22,14 +22,7 @@ export default function AdminHistoriaPage({ params }: AdminHistoriaPageProps) {
   const [achievements, setAchievements] = useState<{ id?: string; year: number; title: string; description: string }[]>([]);
   const [newTimeline, setNewTimeline] = useState({ year: new Date().getFullYear(), title: "", description: "" });
   const [newAchievement, setNewAchievement] = useState({ year: new Date().getFullYear(), title: "", description: "" });
-  const { isDemo, guard } = useDemoMode(clubId ?? "");
-
-  useEffect(() => {
-    params.then((p) => {
-      setClubId(p.clubId);
-      loadData(p.clubId);
-    });
-  }, [params]);
+  const { isDemo } = useDemoMode(clubId ?? "");
 
   const loadData = async (id: string) => {
     const [h, t, a] = await Promise.all([
@@ -41,6 +34,13 @@ export default function AdminHistoriaPage({ params }: AdminHistoriaPageProps) {
     setTimelineEvents(t.map((e) => ({ id: e.id, year: e.year, title: e.title, description: e.description })));
     setAchievements(a.map((e) => ({ id: e.id, year: e.year, title: e.title, description: e.description })));
   };
+
+  useEffect(() => {
+    params.then((p) => {
+      setClubId(p.clubId);
+      loadData(p.clubId);
+    });
+  }, [params]);
 
   const saveHistory = async () => {
     if (!clubId) return;

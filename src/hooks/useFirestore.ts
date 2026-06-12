@@ -19,10 +19,6 @@ import {
   getMatch,
 } from "@/lib/firebase/firestore";
 
-function createKey(...args: (string | number | boolean | undefined | null)[]) {
-  return args.filter(Boolean).join(":");
-}
-
 export function useClub(slug: string) {
   return useQuery({
     queryKey: ["club", slug],

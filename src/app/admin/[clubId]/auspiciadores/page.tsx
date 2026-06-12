@@ -44,11 +44,6 @@ function timestampToDateStr(ts: Timestamp | undefined | null) {
   return new Date(ts.seconds * 1000).toISOString().split("T")[0];
 }
 
-function isExpired(ts: Timestamp | undefined | null) {
-  if (!ts) return false;
-  return new Date(ts.seconds * 1000) < new Date();
-}
-
 type SponsorFormData = {
   name: string;
   logo: string;
@@ -82,8 +77,13 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
   const [editingSponsor, setEditingSponsor] = useState<Sponsor | null>(null);
   const [form, setForm] = useState<SponsorFormData>(defaultForm);
   const [loading, setLoading] = useState(false);
-  const { isDemo, guard } = useDemoMode(clubId ?? "");
+  const { isDemo } = useDemoMode(clubId ?? "");
   const { data: club } = useClub(clubId ?? "");
+
+  const loadSponsors = async (id: string) => {
+    const data = await getSponsors(id);
+    setSponsors(data);
+  };
 
   useEffect(() => {
     params.then((p) => {
@@ -91,11 +91,6 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
       loadSponsors(p.clubId);
     });
   }, [params]);
-
-  const loadSponsors = async (id: string) => {
-    const data = await getSponsors(id);
-    setSponsors(data);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

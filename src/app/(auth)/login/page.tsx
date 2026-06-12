@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
@@ -13,15 +13,8 @@ function LoginForm() {
   const { login, loginWithGoogle } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  useEffect(() => {
-    const emailParam = searchParams.get("email");
-    const passwordParam = searchParams.get("password");
-    if (emailParam) setEmail(emailParam);
-    if (passwordParam) setPassword(passwordParam);
-  }, [searchParams]);
+  const [email, setEmail] = useState(searchParams.get("email") || "");
+  const [password, setPassword] = useState(searchParams.get("password") || "");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 

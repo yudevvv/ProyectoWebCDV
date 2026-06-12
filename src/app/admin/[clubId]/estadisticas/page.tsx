@@ -3,9 +3,7 @@
 import { useEffect, useState } from "react";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { getTeamStats, getActivePlayers, getMatches } from "@/lib/firebase/firestore";
-import { useClub } from "@/hooks/useFirestore";
 import type { TeamStats, Player, Match } from "@/types";
 
 type AdminEstadisticasPageProps = {
@@ -18,15 +16,6 @@ export default function AdminEstadisticasPage({ params }: AdminEstadisticasPageP
   const [players, setPlayers] = useState<Player[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
-  const { data: club } = useClub(clubId ?? "");
-
-  useEffect(() => {
-    params.then((p) => {
-      setClubId(p.clubId);
-      loadData(p.clubId);
-    });
-  }, [params]);
-
   const loadData = async (id: string) => {
     setLoading(true);
     const [s, p, m] = await Promise.all([
@@ -39,6 +28,13 @@ export default function AdminEstadisticasPage({ params }: AdminEstadisticasPageP
     setMatches(m);
     setLoading(false);
   };
+
+  useEffect(() => {
+    params.then((p) => {
+      setClubId(p.clubId);
+      loadData(p.clubId);
+    });
+  }, [params]);
 
   if (!clubId) return null;
   if (loading) return <div className="flex flex-col min-h-screen"><AdminNav clubId={clubId} /><div className="container mx-auto px-4 py-12"><p className="text-muted-foreground">Cargando...</p></div></div>;

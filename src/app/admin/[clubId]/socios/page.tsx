@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { DataTable } from "@/components/admin/DataTable";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,8 +68,13 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
   const [paymentMember, setPaymentMember] = useState<Member | null>(null);
   const [paymentAmount, setPaymentAmount] = useState(0);
   const [form, setForm] = useState<MemberFormData>(defaultForm);
-  const { isDemo, guard } = useDemoMode(clubId ?? "");
+  const { isDemo } = useDemoMode(clubId ?? "");
   const { data: club } = useClub(clubId ?? "");
+
+  const loadMembers = async (id: string) => {
+    const data = await getMembers(id);
+    setMembers(data);
+  };
 
   useEffect(() => {
     params.then((p) => {
@@ -78,11 +82,6 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
       loadMembers(p.clubId);
     });
   }, [params]);
-
-  const loadMembers = async (id: string) => {
-    const data = await getMembers(id);
-    setMembers(data);
-  };
 
   const totalMonthly = members.reduce((sum, m) => sum + (m.status === "approved" ? m.monthlyAmount : 0), 0);
   const totalPaid = members.reduce((sum, m) => sum + (m.totalPaid || 0), 0);
@@ -96,7 +95,7 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
       const payload = {
         ...form,
         startDate: dateToTimestamp(form.startDate),
-        endDate: form.endDate ? dateToTimestamp(form.endDate) : null,
+        endDate: form.endDate ? dateToTimestamp(form.endDate) : undefined,
       };
       await createMember(clubId, payload);
       toast.success("Socio agregado");
@@ -205,7 +204,7 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
       header: "Estado",
       render: (m: Member) => (
         <button onClick={() => handleStatusChange(m)}>
-          <Badge className={statusColors[m.status]}>{m.status === "approved" ? "Activo" : m.status}</Badge>
+          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[m.status]}`}>{m.status === "approved" ? "Activo" : m.status}</span>
         </button>
       ),
     },

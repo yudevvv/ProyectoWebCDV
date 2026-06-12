@@ -65,7 +65,7 @@ export function PlayerDialog({
       await onSubmit(form);
       toast.success("Jugador guardado");
       onOpenChange(false);
-    } catch (err) {
+    } catch {
       toast.error("Error al guardar");
     } finally {
       setLoading(false);

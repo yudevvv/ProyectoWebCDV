@@ -29,44 +29,24 @@ export default function AdminConfigPage({ params }: AdminConfigPageProps) {
 
 function AdminConfigForm({ clubId }: { clubId: string }) {
   const { data: club, refetch } = useClub(clubId);
-  const { isDemo, guard } = useDemoMode(clubId);
+  const { isDemo } = useDemoMode(clubId);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({
-    name: "",
-    description: "",
-    email: "",
-    phone: "",
-    whatsapp: "",
-    instagram: "",
-    facebook: "",
-    logo: "",
-    primaryColor: "#0891b2",
-    secondaryColor: "#059669",
-    facebookPageId: "",
-    facebookAccessToken: "",
-    instagramBusinessId: "",
+    name: club?.name ?? "",
+    description: club?.description ?? "",
+    email: club?.email ?? "",
+    phone: club?.phone ?? "",
+    whatsapp: club?.whatsapp ?? "",
+    instagram: club?.instagram ?? "",
+    facebook: club?.facebook ?? "",
+    logo: club?.logo ?? "",
+    primaryColor: club?.colors?.primary ?? "#0891b2",
+    secondaryColor: club?.colors?.secondary ?? "#059669",
+    facebookPageId: club?.social?.facebookPageId ?? "",
+    facebookAccessToken: club?.social?.facebookAccessToken ?? "",
+    instagramBusinessId: club?.social?.instagramBusinessId ?? "",
   });
-
-  useEffect(() => {
-    if (club) {
-      setForm({
-        name: club.name ?? "",
-        description: club.description ?? "",
-        email: club.email ?? "",
-        phone: club.phone ?? "",
-        whatsapp: club.whatsapp ?? "",
-        instagram: club.instagram ?? "",
-        facebook: club.facebook ?? "",
-        logo: club.logo ?? "",
-        primaryColor: club.colors?.primary ?? "#0891b2",
-        secondaryColor: club.colors?.secondary ?? "#059669",
-        facebookPageId: club.social?.facebookPageId ?? "",
-        facebookAccessToken: club.social?.facebookAccessToken ?? "",
-        instagramBusinessId: club.social?.instagramBusinessId ?? "",
-      });
-    }
-  }, [club]);
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
