@@ -77,10 +77,13 @@ export async function getClub(id: string): Promise<Club | null> {
 
 export async function getClubsByUser(uid: string): Promise<Club[]> {
   try {
+    const userDoc = await getUserDocument(uid);
+    if (userDoc?.roles.superadmin) {
+      return getAllClubs();
+    }
     const owned = await getDocuments<Club>(
       "clubs", where("ownerId", "==", uid)
     );
-    const userDoc = await getUserDocument(uid);
     if (!userDoc) return owned;
     const clubIds = Object.keys(userDoc.roles.clubs);
     if (clubIds.length === 0) return owned;

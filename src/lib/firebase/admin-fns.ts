@@ -340,6 +340,11 @@ export async function updateUserClubs(uid: string, clubs: Record<string, UserRol
   await updateDoc(doc(dbInstance, "users", uid), { "roles.clubs": clubs });
 }
 
+export async function updateUserRole(uid: string, superadmin: boolean) {
+  const dbInstance = await getDb();
+  await updateDoc(doc(dbInstance, "users", uid), { "roles.superadmin": superadmin });
+}
+
 // ---- Upload ----
 export async function uploadFile(
   path: string,
