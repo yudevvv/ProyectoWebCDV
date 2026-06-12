@@ -306,55 +306,177 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
 
   const downloadPDF = async () => {
     if (!club) return;
-    const { default: jsPDF } = await import("jspdf");
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+      import("jspdf"),
+      import("jspdf-autotable"),
+    ]);
     const doc = new jsPDF();
+    let y = 20;
+
+    const addFooter = () => {
+      const pages = doc.getNumberOfPages();
+      for (let i = 1; i <= pages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text(
+          `${club.name} · ${today.toLocaleDateString("es-CL")} · Página ${i} de ${pages}`,
+          105,
+          290,
+          { align: "center" }
+        );
+      }
+    };
+
+    // ── Header ──
     if (club.logo) {
       const img = new Image();
       img.crossOrigin = "anonymous";
       img.src = club.logo;
       await new Promise((resolve) => { img.onload = resolve; });
-      doc.addImage(img, "PNG", 80, 10, 50, 20);
+      doc.addImage(img, "PNG", 83, y, 44, 18);
+      y += 24;
+    } else {
+      y += 4;
     }
-    doc.setFontSize(18);
-    doc.text("Reporte de Socios", 105, 42, { align: "center" });
+
+    doc.setFontSize(20);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Reporte de Socios", 105, y, { align: "center" });
+    y += 8;
     doc.setFontSize(12);
-    doc.text(`Club: ${club.name}`, 105, 50, { align: "center" });
-    doc.setFontSize(10);
-    doc.text(`Generado: ${today.toLocaleDateString("es-CL")}`, 105, 57, { align: "center" });
-    doc.text(`Total socios activos: ${activeMembers}`, 105, 64, { align: "center" });
-    doc.text(`Aporte mensual total: ${formatCurrency(totalMonthly)}`, 105, 71, { align: "center" });
-    doc.text(`Total recaudado: ${formatCurrency(totalPaid)}`, 105, 78, { align: "center" });
-    doc.text(`Promedio por socio: ${activeMembers > 0 ? formatCurrency(Math.round(totalMonthly / activeMembers)) : formatCurrency(0)}`, 105, 85, { align: "center" });
+    doc.setTextColor(100);
+    doc.text(club.name, 105, y, { align: "center" });
+    y += 6;
+    doc.setFontSize(9);
+    doc.text(`Generado el ${today.toLocaleDateString("es-CL", { year: "numeric", month: "long", day: "numeric" })}`, 105, y, { align: "center" });
+    y += 6;
 
-    let y = 98;
-    doc.setFontSize(7);
-    const colWidths = [38, 22, 18, 18, 14, 16, 16, 18, 18];
-    const headers = ["Nombre", "RUT", "Email", "Teléfono", "Tipo", "Mensual", "Pagado", "Inicio", "Estado"];
-    let x = 10;
-    headers.forEach((h, i) => {
-      doc.text(h, x + (colWidths[i] - doc.getTextWidth(h)) / 2, y);
-      x += colWidths[i];
+    // ── Separator ──
+    doc.setDrawColor(0, 150, 136);
+    doc.setLineWidth(0.5);
+    doc.line(14, y, 196, y);
+    y += 8;
+
+    // ── Summary Cards ──
+    doc.setFontSize(9);
+    doc.setTextColor(80);
+    const summaryData = [
+      [`${activeMembers}`, `${members.length}`, `${formatCurrency(totalMonthly)}`, `${formatCurrency(totalPaid)}`, `${overdueMembers.length}`],
+    ];
+    autoTable(doc, {
+      body: summaryData,
+      theme: "plain",
+      styles: { fontSize: 16, halign: "center", textColor: [0, 150, 136] },
+      columnStyles: { 0: { halign: "center" }, 1: { halign: "center" }, 2: { halign: "center" }, 3: { halign: "center" }, 4: { halign: "center" } },
+      margin: { left: 14, right: 14 },
+      startY: y,
     });
-    y += 4;
-    doc.setDrawColor(200);
-    doc.line(10, y - 1, 200, y - 1);
+    y = (doc as typeof doc & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 2;
 
-    for (const m of members) {
-      if (y > 275) { doc.addPage(); y = 20; }
-      x = 10;
-      const vals = [
-        m.name.substring(0, 20), m.rut, m.email.substring(0, 16),
-        m.phone || "—", m.membershipType,
-        formatCurrency(m.monthlyAmount), formatCurrency(m.totalPaid || 0),
-        m.startDate ? formatDate(m.startDate) : "—",
-        m.status === "approved" ? "Activo" : m.status,
-      ];
-      vals.forEach((v) => {
-        doc.text(v, x + 1, y);
-        x += 18;
+    doc.setFontSize(7);
+    doc.setTextColor(120);
+    const labelRow = ["Activos", "Total socios", "Aporte mensual", "Total recaudado", "Vencidos"];
+    const labelX = [14, 48, 84, 118, 152];
+    const colW = 32;
+    labelRow.forEach((l, i) => {
+      doc.text(l, labelX[i] + colW / 2, y, { align: "center" });
+    });
+    y += 8;
+
+    // ── Separator ──
+    doc.setDrawColor(200);
+    doc.setLineWidth(0.3);
+    doc.line(14, y, 196, y);
+    y += 6;
+
+    // ── Members Table ──
+    doc.setFontSize(11);
+    doc.setTextColor(0);
+    doc.text("Listado de Socios", 14, y);
+    y += 5;
+
+    const memberRows = members.map((m) => [
+      m.name,
+      m.rut,
+      m.membershipType === "vip" ? "VIP" : m.membershipType === "premium" ? "Premium" : "Básico",
+      formatCurrency(m.monthlyAmount),
+      formatCurrency(m.totalPaid || 0),
+      formatDate(m.startDate),
+      m.endDate ? formatDate(m.endDate) : "∞",
+      m.status === "approved" ? "Activo" : m.status === "inactive" ? "Inactivo" : m.status,
+    ]);
+
+    autoTable(doc, {
+      head: [["Nombre", "RUT", "Tipo", "Aporte", "Pagado", "Inicio", "Término", "Estado"]],
+      body: memberRows,
+      startY: y,
+      margin: { left: 14, right: 14 },
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [0, 150, 136], textColor: 255, fontStyle: "bold", fontSize: 8 },
+      columnStyles: {
+        0: { cellWidth: 38 },
+        1: { cellWidth: 24 },
+        2: { cellWidth: 16 },
+        3: { cellWidth: 20, halign: "right" },
+        4: { cellWidth: 20, halign: "right" },
+        5: { cellWidth: 18, halign: "center" },
+        6: { cellWidth: 18, halign: "center" },
+        7: { cellWidth: 16, halign: "center" },
+      },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+    });
+    y = (doc as typeof doc & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 8;
+
+    // ── Payment History Table ──
+    doc.addPage();
+    y = 20;
+
+    doc.setFontSize(14);
+    doc.setTextColor(0);
+    doc.text("Historial de Pagos", 14, y);
+    y += 8;
+
+    const allPayments = await Promise.all(
+      members.map((m) =>
+        getPayments(m.id).then((pays) =>
+          pays.map((p) => ({
+            date: formatDate(p.paymentDate),
+            member: m.name,
+            amount: formatCurrency(p.amount),
+            method: paymentMethodLabels[p.paymentMethod] || p.paymentMethod,
+            notes: p.notes || "—",
+          }))
+        )
+      )
+    ).then((results) => results.flat().sort((a, b) => b.date.localeCompare(a.date)));
+
+    if (allPayments.length === 0) {
+      doc.setFontSize(10);
+      doc.setTextColor(120);
+      doc.text("No se han registrado pagos.", 14, y + 6);
+    } else {
+      const paymentRows = allPayments.map((p) => [p.date, p.member, p.amount, p.method, p.notes]);
+
+      autoTable(doc, {
+        head: [["Fecha", "Socio", "Monto", "Método", "Notas"]],
+        body: paymentRows,
+        startY: y,
+        margin: { left: 14, right: 14 },
+        styles: { fontSize: 8, cellPadding: 2 },
+        headStyles: { fillColor: [0, 150, 136], textColor: 255, fontStyle: "bold", fontSize: 8 },
+        columnStyles: {
+          0: { cellWidth: 26, halign: "center" },
+          1: { cellWidth: 48 },
+          2: { cellWidth: 24, halign: "right" },
+          3: { cellWidth: 24, halign: "center" },
+          4: { cellWidth: 48 },
+        },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
       });
-      y += 5;
     }
+
+    addFooter();
     doc.save(`socios-${club.slug}.pdf`);
   };
 
