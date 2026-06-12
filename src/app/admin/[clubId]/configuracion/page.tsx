@@ -41,8 +41,6 @@ function AdminConfigForm({ clubId }: { clubId: string }) {
     instagram: club?.instagram ?? "",
     facebook: club?.facebook ?? "",
     logo: club?.logo ?? "",
-    primaryColor: club?.colors?.primary ?? "#0891b2",
-    secondaryColor: club?.colors?.secondary ?? "#059669",
     facebookPageId: club?.social?.facebookPageId ?? "",
     facebookAccessToken: club?.social?.facebookAccessToken ?? "",
     instagramBusinessId: club?.social?.instagramBusinessId ?? "",
@@ -63,23 +61,10 @@ function AdminConfigForm({ clubId }: { clubId: string }) {
     }
   };
 
-  function isTooLight(hex: string) {
-    const c = hex.replace("#", "");
-    const r = parseInt(c.substring(0, 2), 16);
-    const g = parseInt(c.substring(2, 4), 16);
-    const b = parseInt(c.substring(4, 6), 16);
-    const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
-    return luminance > 230;
-  }
-
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     if (!club) return;
-    if (isTooLight(form.primaryColor)) {
-      toast.error("El color primario no puede ser blanco o muy claro. Elige un color mas oscuro.");
-      return;
-    }
     setSaving(true);
     try {
       const social: Record<string, string> = {};
@@ -96,10 +81,6 @@ function AdminConfigForm({ clubId }: { clubId: string }) {
         instagram: form.instagram,
         facebook: form.facebook,
         logo: form.logo,
-        colors: {
-          primary: form.primaryColor,
-          secondary: form.secondaryColor,
-        },
         social: Object.keys(social).length > 0 ? social : {},
       });
       toast.success("Configuración guardada");
@@ -117,7 +98,7 @@ function AdminConfigForm({ clubId }: { clubId: string }) {
     <div className="flex flex-col min-h-screen">
       <AdminNav clubId={clubId} />
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-2" style={{ color: "var(--club-primary, #0891b2)" }}>Configuración</h1>
+        <h1 className="text-3xl font-bold mb-2 text-cyan-600">Configuración</h1>
         <p className="text-muted-foreground mb-8">
           Personaliza la apariencia y conecta tus redes sociales
         </p>
@@ -188,49 +169,6 @@ function AdminConfigForm({ clubId }: { clubId: string }) {
                 {form.logo && (
                   <img src={form.logo} alt="Preview" className="w-16 h-16 rounded-full object-cover mt-2" />
                 )}
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Color Primario</Label>
-                  <div className="flex gap-2">
-                    <input
-                      type="color"
-                      value={form.primaryColor}
-                      onChange={(e) => setForm({ ...form, primaryColor: e.target.value })}
-                      className="w-10 h-10 rounded cursor-pointer border"
-                    />
-                    <Input value={form.primaryColor} onChange={(e) => setForm({ ...form, primaryColor: e.target.value })} />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Color Secundario</Label>
-                  <div className="flex gap-2">
-                    <input
-                      type="color"
-                      value={form.secondaryColor}
-                      onChange={(e) => setForm({ ...form, secondaryColor: e.target.value })}
-                      className="w-10 h-10 rounded cursor-pointer border"
-                    />
-                    <Input value={form.secondaryColor} onChange={(e) => setForm({ ...form, secondaryColor: e.target.value })} />
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 mt-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Vista previa:</span>
-                  <span
-                    className="px-3 py-1 rounded-full text-white text-xs font-medium"
-                    style={{ backgroundColor: form.primaryColor }}
-                  >
-                    Primario
-                  </span>
-                  <span
-                    className="px-3 py-1 rounded-full text-white text-xs font-medium"
-                    style={{ backgroundColor: form.secondaryColor }}
-                  >
-                    Secundario
-                  </span>
-                </div>
               </div>
             </CardContent>
           </Card>

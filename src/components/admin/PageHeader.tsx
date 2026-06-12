@@ -1,7 +1,3 @@
-"use client";
-
-import { useClub } from "@/hooks/useFirestore";
-
 type PageHeaderProps = {
   clubId: string;
   title: string;
@@ -10,16 +6,10 @@ type PageHeaderProps = {
 };
 
 export function PageHeader({ clubId, title, subtitle, action }: PageHeaderProps) {
-  const { data: club } = useClub(clubId);
-  const primary = club?.colors?.primary ?? "#0891b2";
-  const secondary = club?.colors?.secondary ?? "#059669";
   return (
-    <div
-      className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4"
-      style={{ borderBottom: `2px solid ${primary}20` }}
-    >
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-200">
       <div>
-        <h1 className="text-2xl font-bold" style={{ color: primary }}>
+        <h1 className="text-2xl font-bold text-cyan-600">
           {title}
         </h1>
         {subtitle && (

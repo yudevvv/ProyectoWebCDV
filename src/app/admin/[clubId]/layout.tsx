@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ClubThemeProvider } from "@/components/admin/ClubThemeProvider";
 import { useAuth } from "@/providers/AuthProvider";
 import { getClubBySlug, getClubsByUser } from "@/lib/firebase/firestore";
 
@@ -49,5 +48,5 @@ export default function AdminClubLayout({
 
   if (!clubId || !authorized) return null;
 
-  return <ClubThemeProvider clubId={clubId}>{children}</ClubThemeProvider>;
+  return <>{children}</>;
 }

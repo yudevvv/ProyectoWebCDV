@@ -244,7 +244,7 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold" style={{ color: "var(--club-primary, #0891b2)" }}>Auspiciadores</h1>
+            <h1 className="text-3xl font-bold text-cyan-600">Auspiciadores</h1>
             <p className="text-muted-foreground text-sm">
               {sponsors.filter((s) => s.active).length} activos &middot; Aporte total: ${totalContributions.toLocaleString("es-CL")}
             </p>

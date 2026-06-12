@@ -33,7 +33,6 @@ export default async function ClubPage({
         name={club.name}
         description={club.description}
         banner={club.banner}
-        primaryColor={club.colors?.primary}
       />
 
       <section className="container mx-auto px-4 py-12">

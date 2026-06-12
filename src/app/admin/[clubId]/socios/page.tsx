@@ -218,7 +218,7 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold" style={{ color: "var(--club-primary, #0891b2)" }}>Socios</h1>
+            <h1 className="text-3xl font-bold text-cyan-600">Socios</h1>
             <p className="text-muted-foreground text-sm">{members.length} registrados, {activeMembers} activos</p>
           </div>
           <div className="flex gap-2">
@@ -234,15 +234,15 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
         <div className="grid gap-4 sm:grid-cols-3 mb-6">
           <div className="rounded-lg border bg-card p-4">
             <p className="text-sm text-muted-foreground">Aporte mensual total</p>
-            <p className="text-2xl font-bold" style={{ color: "var(--club-primary, #0891b2)" }}>${totalMonthly.toLocaleString("es-CL")}</p>
+            <p className="text-2xl font-bold text-cyan-600">${totalMonthly.toLocaleString("es-CL")}</p>
           </div>
           <div className="rounded-lg border bg-card p-4">
             <p className="text-sm text-muted-foreground">Total recaudado</p>
-            <p className="text-2xl font-bold" style={{ color: "var(--club-primary, #0891b2)" }}>${totalPaid.toLocaleString("es-CL")}</p>
+            <p className="text-2xl font-bold text-cyan-600">${totalPaid.toLocaleString("es-CL")}</p>
           </div>
           <div className="rounded-lg border bg-card p-4">
             <p className="text-sm text-muted-foreground">Socios activos</p>
-            <p className="text-2xl font-bold" style={{ color: "var(--club-primary, #0891b2)" }}>{activeMembers}</p>
+            <p className="text-2xl font-bold text-cyan-600">{activeMembers}</p>
           </div>
         </div>
 

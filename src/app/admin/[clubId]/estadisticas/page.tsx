@@ -49,7 +49,7 @@ export default function AdminEstadisticasPage({ params }: AdminEstadisticasPageP
       <AdminNav clubId={clubId} />
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-2">
-          <h1 className="text-3xl font-bold" style={{ color: "var(--club-primary, #0891b2)" }}>Estadisticas</h1>
+          <h1 className="text-3xl font-bold text-cyan-600">Estadisticas</h1>
         </div>
         <p className="text-muted-foreground mb-8">Rendimiento del equipo y jugadores</p>
 

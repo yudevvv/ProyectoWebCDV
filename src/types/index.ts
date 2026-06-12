@@ -18,10 +18,6 @@ export type Club = {
   website: string;
   foundationDate: Timestamp;
   proballersUrl?: string;
-  colors: {
-    primary: string;
-    secondary: string;
-  };
   social?: {
     facebookPageId?: string;
     facebookAccessToken?: string;

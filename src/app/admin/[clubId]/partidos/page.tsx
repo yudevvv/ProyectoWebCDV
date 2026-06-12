@@ -187,7 +187,7 @@ export default function AdminPartidosPage({ params }: AdminPartidosPageProps) {
       <AdminNav clubId={clubId} />
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold" style={{ color: "var(--club-primary, #0891b2)" }}>Partidos</h1>
+          <h1 className="text-3xl font-bold text-cyan-600">Partidos</h1>
           <Button onClick={openCreate} disabled={isDemo}>+ Crear Partido</Button>
         </div>
 

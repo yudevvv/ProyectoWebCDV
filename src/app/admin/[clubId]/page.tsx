@@ -56,7 +56,7 @@ export default async function AdminDashboard({
           )}
           <div>
             <h1 className="text-2xl font-bold">{club.name}</h1>
-            <p className="text-sm font-mono" style={{ color: club.colors.primary }}>
+            <p className="text-sm font-mono text-cyan-600">
               $ Panel de Administracion
             </p>
           </div>
@@ -86,7 +86,7 @@ export default async function AdminDashboard({
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle style={{ color: club.colors.primary }}>Accesos Rápidos</CardTitle>
+              <CardTitle className="text-cyan-600">Accesos Rápidos</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <a
@@ -117,8 +117,7 @@ export default async function AdminDashboard({
                 <a
                   href={`/clubes/${club.slug}`}
                   target="_blank"
-                  className="block p-3 rounded-lg hover:bg-muted transition-colors text-sm font-medium"
-                  style={{ color: club.colors.primary }}
+                  className="block p-3 rounded-lg hover:bg-muted transition-colors text-sm font-medium text-cyan-600"
                 >
                   🌐 Ir al sitio web
                 </a>
@@ -129,7 +128,7 @@ export default async function AdminDashboard({
           {teamStats && (
             <Card>
               <CardHeader>
-                <CardTitle style={{ color: club.colors.secondary }}>Rendimiento del Equipo</CardTitle>
+                <CardTitle className="text-cyan-600">Rendimiento del Equipo</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">

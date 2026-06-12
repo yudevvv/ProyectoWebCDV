@@ -23,7 +23,6 @@ type DataTableProps<T> = {
   onEdit?: (item: T) => void;
   onDelete?: (item: T) => void;
   keyExtractor: (item: T) => string;
-  primaryColor?: string;
 };
 
 export function DataTable<T>({
@@ -32,16 +31,12 @@ export function DataTable<T>({
   onEdit,
   onDelete,
   keyExtractor,
-  primaryColor,
 }: DataTableProps<T>) {
   return (
     <div className="rounded-lg border overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow
-            className="[&_th]:text-white"
-            style={{ backgroundColor: primaryColor ?? "var(--club-primary, #0891b2)" }}
-          >
+          <TableRow className="bg-cyan-600 [&_th]:text-white">
             {columns.map((col) => (
               <TableHead key={col.key} className="text-white font-medium">
                 {col.header}

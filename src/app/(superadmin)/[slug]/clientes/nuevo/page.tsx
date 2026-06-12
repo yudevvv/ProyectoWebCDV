@@ -40,7 +40,6 @@ export default function NuevoClubPage() {
         facebook: "",
         website: "",
         foundationDate: null as unknown as import("firebase/firestore").Timestamp,
-        colors: { primary: "#0891b2", secondary: "#059669" },
         published: false,
       });
       toast.success("Club creado exitosamente");

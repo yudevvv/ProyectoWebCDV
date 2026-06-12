@@ -28,7 +28,6 @@ export function AdminNav({ clubId }: AdminNavProps) {
   const { data: club } = useClub(clubId);
   const { isDemo } = useDemoMode(clubId);
   const pathname = usePathname();
-  const primary = club?.colors?.primary ?? "#0891b2";
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -49,12 +48,12 @@ export function AdminNav({ clubId }: AdminNavProps) {
           ) : (
             <div
               className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-white font-bold text-xs"
-              style={{ backgroundColor: primary }}
+              style={{ backgroundColor: "#0891b2" }}
             >
               {club?.name?.charAt(0) ?? "?"}
             </div>
           )}
-          <span className="font-semibold text-sm mr-auto sm:mr-4 truncate" style={{ color: primary }}>
+          <span className="font-semibold text-sm mr-auto sm:mr-4 truncate" style={{ color: "#0891b2" }}>
             {club?.name ?? "Club"}
           </span>
 
@@ -77,13 +76,13 @@ export function AdminNav({ clubId }: AdminNavProps) {
                   className="px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap"
                   style={
                     isActive
-                      ? { backgroundColor: primary, color: "#fff" }
+                      ? { backgroundColor: "#0891b2", color: "#fff" }
                       : { color: "var(--muted-foreground)" }
                   }
                   onMouseEnter={(e) => {
                     if (!isActive) {
-                      e.currentTarget.style.backgroundColor = `${primary}12`;
-                      e.currentTarget.style.color = primary;
+                      e.currentTarget.style.backgroundColor = `${"#0891b2"}12`;
+                      e.currentTarget.style.color = "#0891b2";
                     }
                   }}
                   onMouseLeave={(e) => {
@@ -113,7 +112,7 @@ export function AdminNav({ clubId }: AdminNavProps) {
                   className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors"
                   style={
                     isActive
-                      ? { backgroundColor: primary, color: "#fff" }
+                      ? { backgroundColor: "#0891b2", color: "#fff" }
                       : { color: "var(--foreground)" }
                   }
                 >

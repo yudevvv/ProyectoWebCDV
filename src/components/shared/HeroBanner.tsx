@@ -4,24 +4,15 @@ type HeroBannerProps = {
   name: string;
   description: string;
   banner?: string;
-  primaryColor?: string;
 };
 
 export function HeroBanner({
   name,
   description,
   banner,
-  primaryColor,
 }: HeroBannerProps) {
   return (
-    <section
-      className="relative overflow-hidden py-24 md:py-32"
-      style={
-        primaryColor
-          ? { background: `linear-gradient(135deg, ${primaryColor} 0%, #000 100%)` }
-          : undefined
-      }
-    >
+    <section className="relative overflow-hidden py-24 md:py-32 bg-cyan-700">
       {banner && (
         <div
           className="absolute inset-0 opacity-20 bg-cover bg-center"
