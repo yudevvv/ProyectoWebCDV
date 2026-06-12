@@ -27,6 +27,8 @@ export type Club = {
     instagramBusinessId?: string;
   };
   customDomain?: string;
+  published: boolean;
+  publishedAt?: Timestamp;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 };

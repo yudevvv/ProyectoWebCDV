@@ -232,6 +232,23 @@ export async function getMembers(clubId: string): Promise<Member[]> {
   );
 }
 
+export async function getAllClubs(): Promise<Club[]> {
+  try {
+    return await getDocuments<Club>("clubs", orderBy("createdAt", "desc"));
+  } catch {
+    return [];
+  }
+}
+
+export async function getAllUsers(): Promise<AppUser[]> {
+  try {
+    const snapshot = await getDocs(collection(getDb(), "users"));
+    return snapshot.docs.map((d) => ({ uid: d.id, ...d.data() } as AppUser));
+  } catch {
+    return [];
+  }
+}
+
 export async function getUserDocument(uid: string): Promise<AppUser | null> {
   try {
     const docRef = doc(getDb(), "users", uid);

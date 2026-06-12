@@ -27,7 +27,10 @@ export default function SuperAdminLayout({
             $ Dashboard
           </Link>
           <Link href={`/${slug}/clientes`} className="block px-3 py-2 rounded text-sm font-mono text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
-            $ Clientes
+            $ Clubes
+          </Link>
+          <Link href={`/${slug}/usuarios`} className="block px-3 py-2 rounded text-sm font-mono text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+            $ Usuarios
           </Link>
           <Link href={`/${slug}/configuracion`} className="block px-3 py-2 rounded text-sm font-mono text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
             $ Config

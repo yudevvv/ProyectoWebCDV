@@ -293,6 +293,27 @@ export async function deleteAchievement(id: string) {
 }
 
 // ---- Clubs ----
+export async function createClub(data: Omit<Club, "id" | "createdAt" | "updatedAt">) {
+  const dbInstance = await getDb();
+  const clubData = {
+    ...data,
+    published: false,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+  const docRef = await addDoc(collection(dbInstance, "clubs"), clubData);
+  return docRef.id;
+}
+
+export async function publishClub(id: string, publish: boolean) {
+  const dbInstance = await getDb();
+  await updateDoc(doc(dbInstance, "clubs", id), {
+    published: publish,
+    ...(publish ? { publishedAt: serverTimestamp() } : {}),
+    updatedAt: serverTimestamp(),
+  });
+}
+
 export async function updateClub(id: string, data: Partial<Club>) {
   const dbInstance = await getDb();
   await updateDoc(doc(dbInstance, "clubs", id), {

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useClub } from "@/hooks/useFirestore";
-import { updateClub, uploadFile } from "@/lib/firebase/admin-fns";
+import { updateClub, uploadFile, publishClub } from "@/lib/firebase/admin-fns";
 import { toast } from "sonner";
 
 type AdminConfigPageProps = {
@@ -276,6 +276,50 @@ function AdminConfigForm({ clubId }: { clubId: string }) {
                   </div>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Publicar Sitio Web</CardTitle>
+              <CardDescription>
+                Una vez que tengas todo configurado, publica el sitio para que sea visible al público.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">
+                    {club.published ? "Sitio publicado" : "Sitio en borrador"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {club.published
+                      ? "Tu sitio es visible en /clubes/" + club.slug
+                      : "Solo tú puedes verlo desde el panel de administración"}
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant={club.published ? "outline" : "default"}
+                  onClick={async () => {
+                    try {
+                      await publishClub(club.id, !club.published);
+                      toast.success(club.published ? "Sitio despublicado" : "Sitio publicado exitosamente");
+                      refetch();
+                    } catch {
+                      toast.error("Error al cambiar estado");
+                    }
+                  }}
+                  className={club.published ? "border-orange-300 text-orange-600 hover:bg-orange-50" : "bg-emerald-600 hover:bg-emerald-700"}
+                >
+                  {club.published ? "Despublicar" : "Publicar Sitio"}
+                </Button>
+              </div>
+              {club.published && club.publishedAt && (
+                <p className="text-xs text-muted-foreground mt-3">
+                  Publicado el {new Date(club.publishedAt.seconds * 1000).toLocaleDateString("es-CL")}
+                </p>
+              )}
             </CardContent>
           </Card>
 
