@@ -153,7 +153,7 @@ export default function AdminNoticiasPage({ params }: AdminNoticiasPageProps) {
       <AdminNav clubId={clubId} />
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">Noticias</h1>
+          <h1 className="text-3xl font-bold" style={{ color: "var(--club-primary, #0891b2)" }}>Noticias</h1>
           <div className="flex gap-2">
             <Button variant="outline" onClick={openSocialImport}>
               + Importar de Redes

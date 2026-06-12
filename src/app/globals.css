@@ -128,3 +128,10 @@
     @apply font-sans;
   }
 }
+
+.club-primary-text { color: var(--club-primary); }
+.club-primary-bg { background-color: var(--club-primary); }
+.club-primary-border { border-color: var(--club-primary); }
+.club-secondary-text { color: var(--club-secondary); }
+.club-secondary-bg { background-color: var(--club-secondary); }
+.club-secondary-border { border-color: var(--club-secondary); }

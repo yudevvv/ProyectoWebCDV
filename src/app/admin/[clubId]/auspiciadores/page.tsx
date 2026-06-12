@@ -97,7 +97,7 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
       <AdminNav clubId={clubId} />
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">Auspiciadores</h1>
+          <h1 className="text-3xl font-bold" style={{ color: "var(--club-primary, #0891b2)" }}>Auspiciadores</h1>
           <Button onClick={() => { setEditingSponsor(null); setForm({ name: "", logo: "", website: "", tier: "bronze", description: "" }); setDialogOpen(true); }} disabled={isDemo}>+ Agregar Auspiciador</Button>
         </div>
         <DataTable columns={columns} data={sponsors} keyExtractor={(s) => s.id} onEdit={isDemo ? undefined : (s) => { setEditingSponsor(s); setForm({ name: s.name, logo: s.logo, website: s.website || "", tier: s.tier, description: s.description || "" }); setDialogOpen(true); }} onDelete={isDemo ? undefined : handleDelete} />

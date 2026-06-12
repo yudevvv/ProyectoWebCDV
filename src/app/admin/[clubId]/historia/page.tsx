@@ -97,7 +97,7 @@ export default function AdminHistoriaPage({ params }: AdminHistoriaPageProps) {
     <div className="flex flex-col min-h-screen">
       <AdminNav clubId={clubId} />
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Historia del Club</h1>
+        <h1 className="text-3xl font-bold mb-8" style={{ color: "var(--club-primary, #0891b2)" }}>Historia del Club</h1>
 
         <Card className="mb-8">
           <CardHeader>

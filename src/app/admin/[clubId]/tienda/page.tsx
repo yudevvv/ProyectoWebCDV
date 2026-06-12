@@ -84,7 +84,7 @@ export default function AdminTiendaPage({ params }: AdminTiendaPageProps) {
       <AdminNav clubId={clubId} />
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">Tienda</h1>
+          <h1 className="text-3xl font-bold" style={{ color: "var(--club-primary, #0891b2)" }}>Tienda</h1>
           <Button onClick={() => { setEditingProduct(null); setForm({ name: "", description: "", price: 0, stock: 0, category: "clothing", sku: "", images: [] }); setDialogOpen(true); }} disabled={isDemo}>+ Nuevo Producto</Button>
         </div>
         <DataTable columns={columns} data={products} keyExtractor={(p) => p.id} onEdit={isDemo ? undefined : (p) => { setEditingProduct(p); setForm({ name: p.name, description: p.description, price: p.price, stock: p.stock, category: p.category, sku: p.sku, images: p.images }); setDialogOpen(true); }} onDelete={isDemo ? undefined : handleDelete} />

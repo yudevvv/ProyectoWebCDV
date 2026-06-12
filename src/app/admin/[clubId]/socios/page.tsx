@@ -78,7 +78,7 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
       <AdminNav clubId={clubId} />
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">Socios</h1>
+          <h1 className="text-3xl font-bold" style={{ color: "var(--club-primary, #0891b2)" }}>Socios</h1>
           <p className="text-muted-foreground text-sm">{members.length} registrados</p>
         </div>
         <DataTable columns={columns} data={members} keyExtractor={(m) => m.id} onDelete={isDemo ? undefined : handleDelete} />

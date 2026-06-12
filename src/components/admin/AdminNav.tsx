@@ -39,7 +39,7 @@ export function AdminNav({ clubId }: AdminNavProps) {
         </div>
       )}
       <nav className="border-b border-border bg-background sticky top-0 z-40">
-        <div className="mx-auto flex h-14 items-center gap-3 px-4" style={{ borderBottom: `2px solid ${primary}18` }}>
+        <div className="mx-auto flex h-14 items-center gap-3 px-4">
           {club?.logo ? (
             <img
               src={club.logo}
@@ -54,7 +54,9 @@ export function AdminNav({ clubId }: AdminNavProps) {
               {club?.name?.charAt(0) ?? "?"}
             </div>
           )}
-          <span className="font-semibold text-sm text-foreground mr-auto sm:mr-4 truncate">{club?.name ?? "Club"}</span>
+          <span className="font-semibold text-sm mr-auto sm:mr-4 truncate" style={{ color: primary }}>
+            {club?.name ?? "Club"}
+          </span>
 
           <button
             onClick={() => setMenuOpen(!menuOpen)}
@@ -72,19 +74,22 @@ export function AdminNav({ clubId }: AdminNavProps) {
                 <Link
                   key={link.href}
                   href={fullHref}
-                  className="px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap"
-                  style={{
-                    color: isActive ? primary : undefined,
-                    backgroundColor: isActive ? `${primary}18` : undefined,
-                  }}
+                  className="px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap"
+                  style={
+                    isActive
+                      ? { backgroundColor: primary, color: "#fff" }
+                      : { color: "var(--muted-foreground)" }
+                  }
                   onMouseEnter={(e) => {
                     if (!isActive) {
-                      e.currentTarget.style.backgroundColor = `${primary}0a`;
+                      e.currentTarget.style.backgroundColor = `${primary}12`;
+                      e.currentTarget.style.color = primary;
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isActive) {
                       e.currentTarget.style.backgroundColor = "transparent";
+                      e.currentTarget.style.color = "var(--muted-foreground)";
                     }
                   }}
                 >
@@ -105,12 +110,17 @@ export function AdminNav({ clubId }: AdminNavProps) {
                   key={link.href}
                   href={fullHref}
                   onClick={() => setMenuOpen(false)}
-                  className="block px-3 py-2 text-sm font-medium rounded-md transition-colors"
-                  style={{
-                    color: isActive ? primary : undefined,
-                    backgroundColor: isActive ? `${primary}15` : undefined,
-                  }}
+                  className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors"
+                  style={
+                    isActive
+                      ? { backgroundColor: primary, color: "#fff" }
+                      : { color: "var(--foreground)" }
+                  }
                 >
+                  <span
+                    className="w-1 h-5 rounded-full shrink-0"
+                    style={{ backgroundColor: isActive ? "#fff" : "transparent" }}
+                  />
                   {link.label}
                 </Link>
               );
