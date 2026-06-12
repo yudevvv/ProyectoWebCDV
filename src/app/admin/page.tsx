@@ -4,13 +4,14 @@ import { useAuth } from "@/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getClubsByUser } from "@/lib/firebase/firestore";
 import { createUserDocument } from "@/lib/firebase/admin-fns";
 import { getUserDocument } from "@/lib/firebase/firestore";
 import type { Club } from "@/types";
 import Link from "next/link";
 import Image from "next/image";
+
 
 export default function AdminPage() {
   const { user, loading, logout } = useAuth();
@@ -82,9 +83,11 @@ export default function AdminPage() {
       </header>
       <main className="flex-1 container mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold mb-2">Panel de Administracion</h1>
-        <p className="text-muted-foreground mb-8">
+          <p className="text-muted-foreground mb-8">
           Selecciona un club para administrar
         </p>
+
+        <SuperAdminTrigger />
 
         {fetching ? (
           <p className="text-muted-foreground">Cargando clubes...</p>
@@ -134,6 +137,55 @@ export default function AdminPage() {
           </div>
         )}
       </main>
+
     </div>
   );
+}
+
+function SuperAdminTrigger() {
+  const { user } = useAuth();
+  const router = useRouter();
+  const [feedback, setFeedback] = useState<string | null>(null);
+
+  const verify = useCallback(async () => {
+    if (!user) return;
+    setFeedback("$ Verificando...");
+    try {
+      const idToken = await user.getIdToken();
+      const res = await fetch("/api/auth/superadmin/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken }),
+      });
+      const data = await res.json();
+      if (data.success && data.secret) {
+        router.push(`/${data.secret}`);
+      } else {
+        setFeedback("$ Acceso denegado");
+        setTimeout(() => setFeedback(null), 1500);
+      }
+    } catch {
+      setFeedback("$ Error de conexion");
+      setTimeout(() => setFeedback(null), 1500);
+    }
+  }, [user, router]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key === "S") {
+        e.preventDefault();
+        verify();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [verify]);
+
+  if (!user) return null;
+
+  return feedback ? (
+    <div className="fixed bottom-4 right-4 z-50 font-mono text-[10px] text-emerald-500 bg-slate-900 px-3 py-1.5 rounded border border-emerald-600">
+      {feedback}
+    </div>
+  ) : null;
 }
