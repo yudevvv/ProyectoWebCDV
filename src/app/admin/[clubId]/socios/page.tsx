@@ -98,7 +98,8 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [paymentMember, setPaymentMember] = useState<Member | null>(null);
+  const [paymentMemberId, setPaymentMemberId] = useState<string | null>(null);
+  const paymentMember = paymentMemberId ? (members.find((m) => m.id === paymentMemberId) ?? null) : null;
   const [paymentAmount, setPaymentAmount] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState<"transferencia" | "efectivo" | "tarjeta" | "otro">("transferencia");
   const [paymentNotes, setPaymentNotes] = useState("");
@@ -135,7 +136,7 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
     if (!m.endDate || m.status !== "approved") return false;
     const end = new Date(m.endDate.seconds * 1000);
     const diff = (end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
-    return diff > 0 && diff <= 30;
+    return diff > 0 && diff <= 5;
   });
 
   const totalMonthly = members.reduce((sum, m) => sum + (m.status === "approved" ? m.monthlyAmount : 0), 0);
@@ -197,8 +198,8 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
       setFormErrors({});
       await refreshMembers(clubId);
     } catch (e) {
-      console.error("Error al guardar socio:", e);
-      toast.error("Error al guardar. Revisa que todos los campos sean válidos.");
+      const msg = e instanceof Error ? e.message : "Error desconocido";
+      toast.error(`Error al guardar: ${msg}`);
     } finally {
       setSaving(false);
     }
@@ -358,12 +359,14 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
     doc.save(`socios-${club.slug}.pdf`);
   };
 
+  const daysUntil = (m: Member) => {
+    if (!m.endDate) return Infinity;
+    return Math.ceil((new Date(m.endDate.seconds * 1000).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+  };
   const isOverdue = (m: Member) => m.endDate && new Date(m.endDate.seconds * 1000) < new Date();
   const isExpiringSoon = (m: Member) => {
-    if (!m.endDate) return false;
-    const end = new Date(m.endDate.seconds * 1000);
-    const diff = (end.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24);
-    return diff > 0 && diff <= 7;
+    const d = daysUntil(m);
+    return d > 0 && d <= 5;
   };
 
   const columns = [
@@ -465,13 +468,16 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
         const overdue = isOverdue(m);
         const expiring = isExpiringSoon(m);
         if (!overdue && !expiring) return null;
+        if (overdue) {
+          return (
+            <span className="text-xs text-red-500 dark:text-red-400 font-medium whitespace-nowrap">
+              Vencido
+            </span>
+          );
+        }
         return (
-          <span title={overdue ? "Vencido" : "Próximo a vencer"}>
-            {overdue ? (
-              <AlertTriangle className="h-4 w-4 text-red-500" />
-            ) : (
-              <Calendar className="h-4 w-4 text-amber-500" />
-            )}
+          <span className="text-xs text-amber-600 dark:text-amber-400 font-medium whitespace-nowrap">
+            {daysUntil(m)} día{daysUntil(m) !== 1 ? "s" : ""}
           </span>
         );
       },
@@ -497,7 +503,7 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
           variant="ghost"
           className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
           onClick={() => {
-            setPaymentMember(m);
+            setPaymentMemberId(m.id);
             setPaymentAmount(m.monthlyAmount);
             setPaymentMethod("transferencia");
             setPaymentNotes("");
@@ -592,7 +598,7 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
             {overdueMembers.length === 0 && expiringMembers.length > 0 && (
               <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/50 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
                 <Calendar className="h-5 w-5 shrink-0" />
-                <span><strong>{expiringMembers.length}</strong> socio{expiringMembers.length > 1 ? "s" : ""} próximo{expiringMembers.length > 1 ? "s" : ""} a vencer</span>
+                <span><strong>{expiringMembers.length}</strong> socio{expiringMembers.length > 1 ? "s" : ""} vence{expiringMembers.length > 1 ? "n" : ""} en menos de 5 días</span>
               </div>
             )}
           </div>
