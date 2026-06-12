@@ -14,6 +14,7 @@ import { createNews, updateNews, deleteNews } from "@/lib/firebase/admin-fns";
 import { getNews } from "@/lib/firebase/firestore";
 import type { News } from "@/types";
 import { toast } from "sonner";
+import { useDemoMode } from "@/lib/demo-mode";
 
 type AdminNoticiasPageProps = {
   params: Promise<{ clubId: string }>;
@@ -38,6 +39,7 @@ export default function AdminNoticiasPage({ params }: AdminNoticiasPageProps) {
   const [editingNews, setEditingNews] = useState<News | null>(null);
   const [form, setForm] = useState({ title: "", excerpt: "", content: "", author: "", coverImage: "", published: false });
   const [loading, setLoading] = useState(false);
+  const { isDemo, guard } = useDemoMode(clubId ?? "");
 
   useEffect(() => {
     params.then((p) => {
@@ -65,6 +67,7 @@ export default function AdminNoticiasPage({ params }: AdminNoticiasPageProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     if (!clubId) return;
     setLoading(true);
     try {
@@ -86,6 +89,7 @@ export default function AdminNoticiasPage({ params }: AdminNoticiasPageProps) {
 
   const handleDelete = async (item: News) => {
     if (!confirm("¿Eliminar noticia?")) return;
+    if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     await deleteNews(item.id);
     toast.success("Noticia eliminada");
     await loadNews(clubId!);
@@ -154,11 +158,11 @@ export default function AdminNoticiasPage({ params }: AdminNoticiasPageProps) {
             <Button variant="outline" onClick={openSocialImport}>
               + Importar de Redes
             </Button>
-            <Button onClick={openCreate}>+ Nueva Noticia</Button>
+            <Button onClick={openCreate} disabled={isDemo}>+ Nueva Noticia</Button>
           </div>
         </div>
 
-        <DataTable columns={columns} data={news} keyExtractor={(n) => n.id} onEdit={openEdit} onDelete={handleDelete} />
+        <DataTable columns={columns} data={news} keyExtractor={(n) => n.id} onEdit={isDemo ? undefined : openEdit} onDelete={isDemo ? undefined : handleDelete} />
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent className="sm:max-w-xl">

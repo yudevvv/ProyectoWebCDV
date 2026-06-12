@@ -10,6 +10,7 @@ import { createPlayer, updatePlayer, deletePlayer } from "@/lib/firebase/admin-f
 import { getActivePlayers } from "@/lib/firebase/firestore";
 import type { Player } from "@/types";
 import { toast } from "sonner";
+import { useDemoMode } from "@/lib/demo-mode";
 
 type AdminJugadoresPageProps = {
   params: Promise<{ clubId: string }>;
@@ -22,6 +23,7 @@ export default function AdminJugadoresPage({
   const [players, setPlayers] = useState<Player[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
+  const { isDemo, guard } = useDemoMode(clubId ?? "");
 
   useEffect(() => {
     params.then((p) => {
@@ -37,12 +39,14 @@ export default function AdminJugadoresPage({
 
   const handleCreate = async (data: PlayerFormData) => {
     if (!clubId) return;
+    if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     await createPlayer(clubId, data);
     await loadPlayers(clubId);
   };
 
   const handleUpdate = async (data: PlayerFormData) => {
     if (!editingPlayer) return;
+    if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     await updatePlayer(editingPlayer.id, data);
     await loadPlayers(clubId!);
     setEditingPlayer(null);
@@ -50,6 +54,7 @@ export default function AdminJugadoresPage({
 
   const handleDelete = async (player: Player) => {
     if (!confirm("¿Eliminar jugador?")) return;
+    if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     await deletePlayer(player.id);
     toast.success("Jugador eliminado");
     await loadPlayers(clubId!);
@@ -109,7 +114,7 @@ export default function AdminJugadoresPage({
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">Jugadores</h1>
-          <Button onClick={() => { setEditingPlayer(null); setDialogOpen(true); }}>
+          <Button onClick={() => { setEditingPlayer(null); setDialogOpen(true); }} disabled={isDemo}>
             + Agregar Jugador
           </Button>
         </div>
@@ -118,11 +123,11 @@ export default function AdminJugadoresPage({
           columns={columns}
           data={players}
           keyExtractor={(p) => p.id}
-          onEdit={(p) => {
+          onEdit={isDemo ? undefined : (p) => {
             setEditingPlayer(p);
             setDialogOpen(true);
           }}
-          onDelete={handleDelete}
+          onDelete={isDemo ? undefined : handleDelete}
         />
 
         <PlayerDialog

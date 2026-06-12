@@ -17,6 +17,7 @@ import { createSponsor, updateSponsor, deleteSponsor } from "@/lib/firebase/admi
 import { getSponsors } from "@/lib/firebase/firestore";
 import type { Sponsor } from "@/types";
 import { toast } from "sonner";
+import { useDemoMode } from "@/lib/demo-mode";
 
 const tierColors: Record<string, string> = {
   gold: "bg-yellow-100 text-yellow-700",
@@ -35,6 +36,7 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
   const [editingSponsor, setEditingSponsor] = useState<Sponsor | null>(null);
   const [form, setForm] = useState({ name: "", logo: "", website: "", tier: "bronze" as Sponsor["tier"], description: "" });
   const [loading, setLoading] = useState(false);
+  const { isDemo, guard } = useDemoMode(clubId ?? "");
 
   useEffect(() => {
     params.then((p) => {
@@ -50,6 +52,7 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     if (!clubId) return;
     setLoading(true);
     try {
@@ -68,6 +71,7 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
 
   const handleDelete = async (sponsor: Sponsor) => {
     if (!confirm("¿Eliminar auspiciador?")) return;
+    if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     await deleteSponsor(sponsor.id);
     toast.success("Auspiciador eliminado");
     await loadSponsors(clubId!);
@@ -94,9 +98,9 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">Auspiciadores</h1>
-          <Button onClick={() => { setEditingSponsor(null); setForm({ name: "", logo: "", website: "", tier: "bronze", description: "" }); setDialogOpen(true); }}>+ Agregar Auspiciador</Button>
+          <Button onClick={() => { setEditingSponsor(null); setForm({ name: "", logo: "", website: "", tier: "bronze", description: "" }); setDialogOpen(true); }} disabled={isDemo}>+ Agregar Auspiciador</Button>
         </div>
-        <DataTable columns={columns} data={sponsors} keyExtractor={(s) => s.id} onEdit={(s) => { setEditingSponsor(s); setForm({ name: s.name, logo: s.logo, website: s.website || "", tier: s.tier, description: s.description || "" }); setDialogOpen(true); }} onDelete={handleDelete} />
+        <DataTable columns={columns} data={sponsors} keyExtractor={(s) => s.id} onEdit={isDemo ? undefined : (s) => { setEditingSponsor(s); setForm({ name: s.name, logo: s.logo, website: s.website || "", tier: s.tier, description: s.description || "" }); setDialogOpen(true); }} onDelete={isDemo ? undefined : handleDelete} />
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent className="sm:max-w-lg">

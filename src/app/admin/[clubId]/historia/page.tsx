@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { saveClubHistory, createTimelineEvent, deleteTimelineEvent, createAchievement, deleteAchievement } from "@/lib/firebase/admin-fns";
 import { getClubHistory, getTimelineEvents, getAchievements } from "@/lib/firebase/firestore";
 import { toast } from "sonner";
+import { useDemoMode } from "@/lib/demo-mode";
 
 type AdminHistoriaPageProps = {
   params: Promise<{ clubId: string }>;
@@ -21,6 +22,7 @@ export default function AdminHistoriaPage({ params }: AdminHistoriaPageProps) {
   const [achievements, setAchievements] = useState<{ id?: string; year: number; title: string; description: string }[]>([]);
   const [newTimeline, setNewTimeline] = useState({ year: new Date().getFullYear(), title: "", description: "" });
   const [newAchievement, setNewAchievement] = useState({ year: new Date().getFullYear(), title: "", description: "" });
+  const { isDemo, guard } = useDemoMode(clubId ?? "");
 
   useEffect(() => {
     params.then((p) => {
@@ -42,6 +44,7 @@ export default function AdminHistoriaPage({ params }: AdminHistoriaPageProps) {
 
   const saveHistory = async () => {
     if (!clubId) return;
+    if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     try {
       await saveClubHistory(clubId, history);
       toast.success("Historia guardada");
@@ -50,6 +53,7 @@ export default function AdminHistoriaPage({ params }: AdminHistoriaPageProps) {
 
   const addTimeline = async () => {
     if (!clubId || !newTimeline.title) return;
+    if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     try {
       await createTimelineEvent(clubId, newTimeline);
       toast.success("Evento agregado");
@@ -60,6 +64,7 @@ export default function AdminHistoriaPage({ params }: AdminHistoriaPageProps) {
 
   const addAchievement = async () => {
     if (!clubId || !newAchievement.title) return;
+    if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     try {
       await createAchievement(clubId, newAchievement);
       toast.success("Logro agregado");
@@ -69,6 +74,7 @@ export default function AdminHistoriaPage({ params }: AdminHistoriaPageProps) {
   };
 
   const removeTimeline = async (id: string | undefined) => {
+    if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     if (!id) return;
     if (!confirm("¿Eliminar evento?")) return;
     await deleteTimelineEvent(id);
@@ -77,6 +83,7 @@ export default function AdminHistoriaPage({ params }: AdminHistoriaPageProps) {
   };
 
   const removeAchievement = async (id: string | undefined) => {
+    if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     if (!id) return;
     if (!confirm("¿Eliminar logro?")) return;
     await deleteAchievement(id);
@@ -109,7 +116,7 @@ export default function AdminHistoriaPage({ params }: AdminHistoriaPageProps) {
               <Label>Historia</Label>
               <textarea className="flex min-h-[150px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" value={history.history} onChange={(e) => setHistory({ ...history, history: e.target.value })} />
             </div>
-            <Button onClick={saveHistory}>Guardar Historia</Button>
+            <Button onClick={saveHistory} disabled={isDemo}>Guardar Historia</Button>
           </CardContent>
         </Card>
 
@@ -133,7 +140,7 @@ export default function AdminHistoriaPage({ params }: AdminHistoriaPageProps) {
             <div className="grid grid-cols-3 gap-3">
               <Input type="number" placeholder="Año" value={newTimeline.year} onChange={(e) => setNewTimeline({ ...newTimeline, year: parseInt(e.target.value) || 2025 })} />
               <Input placeholder="Título" value={newTimeline.title} onChange={(e) => setNewTimeline({ ...newTimeline, title: e.target.value })} />
-              <Button onClick={addTimeline}>Agregar Evento</Button>
+              <Button onClick={addTimeline} disabled={isDemo}>Agregar Evento</Button>
             </div>
             <Input className="mt-3" placeholder="Descripción" value={newTimeline.description} onChange={(e) => setNewTimeline({ ...newTimeline, description: e.target.value })} />
           </CardContent>
@@ -160,7 +167,7 @@ export default function AdminHistoriaPage({ params }: AdminHistoriaPageProps) {
               <Input type="number" className="w-24" placeholder="Año" value={newAchievement.year} onChange={(e) => setNewAchievement({ ...newAchievement, year: parseInt(e.target.value) || 2025 })} />
               <Input placeholder="Título" value={newAchievement.title} onChange={(e) => setNewAchievement({ ...newAchievement, title: e.target.value })} />
               <Input placeholder="Descripción" value={newAchievement.description} onChange={(e) => setNewAchievement({ ...newAchievement, description: e.target.value })} />
-              <Button onClick={addAchievement}>Agregar</Button>
+              <Button onClick={addAchievement} disabled={isDemo}>Agregar</Button>
             </div>
           </CardContent>
         </Card>

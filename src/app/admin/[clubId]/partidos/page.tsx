@@ -27,6 +27,7 @@ import type { Match } from "@/types";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { useDemoMode } from "@/lib/demo-mode";
 
 const statusColors: Record<string, string> = {
   upcoming: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
@@ -66,6 +67,7 @@ export default function AdminPartidosPage({ params }: AdminPartidosPageProps) {
     competition: "", homeScore: 0, awayScore: 0,
   });
   const [loading, setLoading] = useState(false);
+  const { isDemo, guard } = useDemoMode(clubId ?? "");
 
   useEffect(() => {
     params.then((p) => {
@@ -101,6 +103,7 @@ export default function AdminPartidosPage({ params }: AdminPartidosPageProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     if (!clubId) return;
     setLoading(true);
     try {
@@ -136,6 +139,7 @@ export default function AdminPartidosPage({ params }: AdminPartidosPageProps) {
 
   const handleDelete = async (match: Match) => {
     if (!confirm("¿Eliminar partido?")) return;
+    if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     await deleteMatch(match.id);
     toast.success("Partido eliminado");
     await loadMatches(clubId!);
@@ -183,15 +187,15 @@ export default function AdminPartidosPage({ params }: AdminPartidosPageProps) {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">Partidos</h1>
-          <Button onClick={openCreate}>+ Crear Partido</Button>
+          <Button onClick={openCreate} disabled={isDemo}>+ Crear Partido</Button>
         </div>
 
         <DataTable
           columns={columns}
           data={matches}
           keyExtractor={(m) => m.id}
-          onEdit={openEdit}
-          onDelete={handleDelete}
+          onEdit={isDemo ? undefined : openEdit}
+          onDelete={isDemo ? undefined : handleDelete}
         />
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useClub } from "@/hooks/useFirestore";
+import { useDemoMode } from "@/lib/demo-mode";
 
 
 type AdminNavProps = {
@@ -24,11 +25,18 @@ const adminLinks = [
 
 export function AdminNav({ clubId }: AdminNavProps) {
   const { data: club } = useClub(clubId);
+  const { isDemo } = useDemoMode(clubId);
   const pathname = usePathname();
   const primary = club?.colors?.primary ?? "#0891b2";
 
   return (
-    <nav className="border-b bg-white">
+    <>
+      {isDemo && (
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-1.5 text-center text-xs font-mono text-amber-700">
+          $ MODO DEMO — Solo lectura. Los cambios no se guardan.
+        </div>
+      )}
+      <nav className="border-b bg-white">
       <div className="container mx-auto flex h-14 items-center gap-3 px-4" style={{ borderBottom: `2px solid ${primary}18` }}>
         {club?.logo ? (
           <img
@@ -66,6 +74,7 @@ export function AdminNav({ clubId }: AdminNavProps) {
           })}
         </div>
       </div>
-    </nav>
+      </nav>
+    </>
   );
 }

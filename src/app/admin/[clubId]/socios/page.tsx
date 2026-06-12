@@ -9,6 +9,7 @@ import { deleteMember } from "@/lib/firebase/admin-fns";
 import { getMembers } from "@/lib/firebase/firestore";
 import type { Member } from "@/types";
 import { toast } from "sonner";
+import { useDemoMode } from "@/lib/demo-mode";
 
 const statusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-700",
@@ -24,6 +25,7 @@ type AdminSociosPageProps = {
 export default function AdminSociosPage({ params }: AdminSociosPageProps) {
   const [clubId, setClubId] = useState<string | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
+  const { isDemo, guard } = useDemoMode(clubId ?? "");
 
   useEffect(() => {
     params.then((p) => {
@@ -39,6 +41,7 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
 
   const handleDelete = async (member: Member) => {
     if (!confirm("¿Eliminar socio?")) return;
+    if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     await deleteMember(member.id);
     toast.success("Socio eliminado");
     await loadMembers(clubId!);
@@ -78,7 +81,7 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
           <h1 className="text-3xl font-bold">Socios</h1>
           <p className="text-muted-foreground text-sm">{members.length} registrados</p>
         </div>
-        <DataTable columns={columns} data={members} keyExtractor={(m) => m.id} onDelete={handleDelete} />
+        <DataTable columns={columns} data={members} keyExtractor={(m) => m.id} onDelete={isDemo ? undefined : handleDelete} />
         {members.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">No hay socios registrados</div>
         )}

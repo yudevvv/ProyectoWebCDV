@@ -16,6 +16,7 @@ import { createProduct, updateProduct, deleteProduct } from "@/lib/firebase/admi
 import { getProducts } from "@/lib/firebase/firestore";
 import type { Product } from "@/types";
 import { toast } from "sonner";
+import { useDemoMode } from "@/lib/demo-mode";
 
 type AdminTiendaPageProps = {
   params: Promise<{ clubId: string }>;
@@ -28,6 +29,7 @@ export default function AdminTiendaPage({ params }: AdminTiendaPageProps) {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [form, setForm] = useState({ name: "", description: "", price: 0, stock: 0, category: "clothing" as Product["category"], sku: "", images: [] as string[] });
   const [loading, setLoading] = useState(false);
+  const { isDemo, guard } = useDemoMode(clubId ?? "");
 
   useEffect(() => {
     params.then((p) => {
@@ -43,6 +45,7 @@ export default function AdminTiendaPage({ params }: AdminTiendaPageProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     if (!clubId) return;
     setLoading(true);
     try {
@@ -61,6 +64,7 @@ export default function AdminTiendaPage({ params }: AdminTiendaPageProps) {
 
   const handleDelete = async (product: Product) => {
     if (!confirm("¿Eliminar producto?")) return;
+    if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     await deleteProduct(product.id);
     toast.success("Producto eliminado");
     await loadProducts(clubId!);
@@ -81,9 +85,9 @@ export default function AdminTiendaPage({ params }: AdminTiendaPageProps) {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">Tienda</h1>
-          <Button onClick={() => { setEditingProduct(null); setForm({ name: "", description: "", price: 0, stock: 0, category: "clothing", sku: "", images: [] }); setDialogOpen(true); }}>+ Nuevo Producto</Button>
+          <Button onClick={() => { setEditingProduct(null); setForm({ name: "", description: "", price: 0, stock: 0, category: "clothing", sku: "", images: [] }); setDialogOpen(true); }} disabled={isDemo}>+ Nuevo Producto</Button>
         </div>
-        <DataTable columns={columns} data={products} keyExtractor={(p) => p.id} onEdit={(p) => { setEditingProduct(p); setForm({ name: p.name, description: p.description, price: p.price, stock: p.stock, category: p.category, sku: p.sku, images: p.images }); setDialogOpen(true); }} onDelete={handleDelete} />
+        <DataTable columns={columns} data={products} keyExtractor={(p) => p.id} onEdit={isDemo ? undefined : (p) => { setEditingProduct(p); setForm({ name: p.name, description: p.description, price: p.price, stock: p.stock, category: p.category, sku: p.sku, images: p.images }); setDialogOpen(true); }} onDelete={isDemo ? undefined : handleDelete} />
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent className="sm:max-w-lg">

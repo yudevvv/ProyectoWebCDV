@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useClub } from "@/hooks/useFirestore";
 import { updateClub, uploadFile, publishClub } from "@/lib/firebase/admin-fns";
 import { toast } from "sonner";
+import { useDemoMode } from "@/lib/demo-mode";
 
 type AdminConfigPageProps = {
   params: Promise<{ clubId: string }>;
@@ -28,6 +29,7 @@ export default function AdminConfigPage({ params }: AdminConfigPageProps) {
 
 function AdminConfigForm({ clubId }: { clubId: string }) {
   const { data: club, refetch } = useClub(clubId);
+  const { isDemo, guard } = useDemoMode(clubId);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({
@@ -83,6 +85,7 @@ function AdminConfigForm({ clubId }: { clubId: string }) {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     if (!club) return;
     setSaving(true);
     try {
@@ -302,6 +305,7 @@ function AdminConfigForm({ clubId }: { clubId: string }) {
                   type="button"
                   variant={club.published ? "outline" : "default"}
                   onClick={async () => {
+                    if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
                     try {
                       await publishClub(club.id, !club.published);
                       toast.success(club.published ? "Sitio despublicado" : "Sitio publicado exitosamente");
