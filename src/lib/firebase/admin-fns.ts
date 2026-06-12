@@ -236,26 +236,30 @@ export async function createMember(
   }
 ) {
   const dbInstance = await getDb();
-  const docRef = await addDoc(collection(dbInstance, "members"), {
+  const docData = {
     ...data,
     address: data.address ?? "",
     notes: data.notes ?? "",
     status: "approved" as const,
     totalPaid: 0,
     startDate: data.startDate ?? serverTimestamp(),
-    endDate: data.endDate ?? undefined,
-    nextDueDate: data.nextDueDate ?? undefined,
+    ...(data.endDate ? { endDate: data.endDate } : {}),
+    ...(data.nextDueDate ? { nextDueDate: data.nextDueDate } : {}),
     clubId,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-  });
+  };
+  const docRef = await addDoc(collection(dbInstance, "members"), docData);
   return docRef.id;
 }
 
 export async function updateMember(id: string, data: Partial<Member>) {
   const dbInstance = await getDb();
+  const clean = Object.fromEntries(
+    Object.entries(data).filter(([, v]) => v !== undefined)
+  );
   await updateDoc(doc(dbInstance, "members", id), {
-    ...data,
+    ...clean,
     updatedAt: serverTimestamp(),
   });
 }
