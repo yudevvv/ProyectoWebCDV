@@ -672,6 +672,10 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
           columns={[...columns, actionColumn]}
           data={members}
           keyExtractor={(m) => m.id}
+          searchable
+          searchPlaceholder="Buscar por nombre, RUT, email..."
+          searchKeys={["name", "rut", "email", "phone", "membershipType"]}
+          pageSize={10}
         />
 
         <Dialog open={dialogOpen} onOpenChange={(open) => {
