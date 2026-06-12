@@ -15,7 +15,7 @@ import type { Member, Payment } from "@/types";
 import { Timestamp } from "firebase/firestore";
 import { toast } from "sonner";
 import { useDemoMode } from "@/lib/demo-mode";
-import { FileDown, Plus, DollarSign, History, AlertTriangle, UserCheck, UserX, Calendar, Pencil, Trash2 } from "lucide-react";
+import { FileDown, Plus, DollarSign, History, AlertTriangle, UserCheck, UserX, Calendar, Pencil, Trash2, FlaskConical } from "lucide-react";
 
 const statusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
@@ -578,6 +578,51 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
             <p className="text-muted-foreground text-sm">{members.length} registrados, {activeMembers} activos</p>
           </div>
           <div className="flex gap-2">
+            {process.env.NODE_ENV === "development" && (
+              <Button variant="outline" size="sm" onClick={async () => {
+                const names = [
+                  "Carlos Muñoz", "María González", "José Pérez", "Ana Soto", "Pedro López",
+                  "Claudia Rojas", "Francisco Díaz", "Valentina Torres", "Andrés Silva", "Camila Moreno",
+                  "Diego Castillo", "Javiera Fernández", "Matías Martínez", "Isidora Álvarez", "Benjamín Ruiz",
+                  "Antonia Vega", "Sebastián Herrera", "Emilia Campos", "Joaquín Ortiz", "Florencia Morales",
+                ];
+                const ruts = [
+                  "12.345.678-9", "13.246.579-0", "14.789.123-4", "15.987.654-3", "16.543.210-k",
+                  "17.890.123-5", "18.765.432-1", "19.234.567-8", "20.876.543-2", "21.345.678-6",
+                  "22.654.321-7", "23.987.654-0", "24.123.456-9", "25.789.012-3", "26.456.789-k",
+                  "27.012.345-5", "28.678.901-1", "29.234.567-8", "30.890.123-4", "31.567.890-2",
+                ];
+                const types: Member["membershipType"][] = ["basic", "basic", "premium", "basic", "vip", "basic", "premium", "basic", "basic", "premium", "basic", "vip", "basic", "premium", "basic", "basic", "basic", "premium", "basic", "vip"];
+                const amounts = [15000, 10000, 25000, 12000, 40000, 10000, 25000, 15000, 10000, 30000, 10000, 50000, 15000, 25000, 10000, 12000, 10000, 20000, 15000, 35000];
+                const statuses: Member["status"][] = ["approved", "approved", "approved", "approved", "approved", "approved", "approved", "approved", "approved", "approved", "approved", "approved", "approved", "inactive", "approved", "approved", "inactive", "approved", "approved", "approved"];
+                const pendingToast = toast.loading("Insertando 20 socios...");
+                for (let i = 0; i < names.length; i++) {
+                  const startDate = new Date();
+                  startDate.setMonth(startDate.getMonth() - Math.floor(Math.random() * 6));
+                  const endDate = new Date(startDate);
+                  endDate.setMonth(endDate.getMonth() + 3);
+                  try {
+                    const id = await createMember(clubId, {
+                      name: names[i], rut: ruts[i], email: `${names[i].toLowerCase().replace(/\s+/g, ".")}@correo.cl`,
+                      phone: `+56 9 ${String(7000 + i).padStart(4, "0")} ${String(1000 + i).padStart(4, "0")}`,
+                      membershipType: types[i], monthlyAmount: amounts[i],
+                      address: `Calle ${i + 1} #${100 + i}, Santiago`,
+                      startDate: Timestamp.fromDate(startDate),
+                      endDate: Timestamp.fromDate(endDate),
+                      notes: statuses[i] === "inactive" ? "Retiro voluntario" : "",
+                    });
+                    if (statuses[i] === "inactive") {
+                      await updateMember(id, { status: "inactive" as const });
+                    }
+                  } catch { /* skip */ }
+                }
+                toast.dismiss(pendingToast);
+                toast.success("20 socios insertados");
+                await refreshMembers(clubId);
+              }}>
+                <FlaskConical className="h-4 w-4 mr-1" /> Seed 20
+              </Button>
+            )}
             <Button variant="outline" onClick={downloadPDF} disabled={members.length === 0} size="sm">
               <FileDown className="h-4 w-4 mr-1" /> Reporte
             </Button>
