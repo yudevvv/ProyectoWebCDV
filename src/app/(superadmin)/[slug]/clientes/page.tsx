@@ -115,7 +115,10 @@ export default async function SuperAdminClubes({
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
-                        <Link href={`/admin/${club.slug}`} className="text-xs font-mono text-cyan-600 hover:underline">
+                        <Link href={`/${slug}/clientes/${club.slug}`} className="text-xs font-mono text-cyan-600 hover:underline">
+                          Editar
+                        </Link>
+                        <Link href={`/admin/${club.id}`} className="text-xs font-mono text-cyan-600 hover:underline">
                           Admin
                         </Link>
                         {club.published && (

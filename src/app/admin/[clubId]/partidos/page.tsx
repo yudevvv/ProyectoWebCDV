@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useDemoMode } from "@/lib/demo-mode";
+import { Timestamp } from "firebase/firestore";
 
 const statusColors: Record<string, string> = {
   upcoming: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
@@ -115,7 +116,7 @@ export default function AdminPartidosPage({ params }: AdminPartidosPageProps) {
         homeScore: form.homeScore,
         awayScore: form.awayScore,
         season: new Date().getFullYear().toString(),
-        date: { seconds: new Date(form.date).getTime() / 1000, nanoseconds: 0 } as unknown as Match["date"],
+        date: Timestamp.fromDate(new Date(form.date)),
         opponentLogo: editingMatch?.opponentLogo,
         ticketUrl: editingMatch?.ticketUrl,
         streamUrl: editingMatch?.streamUrl,

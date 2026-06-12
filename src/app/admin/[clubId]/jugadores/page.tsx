@@ -40,8 +40,13 @@ export default function AdminJugadoresPage({
   const handleCreate = async (data: PlayerFormData) => {
     if (!clubId) return;
     if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
-    await createPlayer(clubId, data);
-    await loadPlayers(clubId);
+    try {
+      await createPlayer(clubId, data);
+      await loadPlayers(clubId);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
   };
 
   const handleUpdate = async (data: PlayerFormData) => {

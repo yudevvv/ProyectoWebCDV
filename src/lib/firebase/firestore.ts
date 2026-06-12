@@ -24,6 +24,7 @@ import type {
   TimelineEvent,
   Achievement,
   AppUser,
+  LNBPlayerStat,
 } from "@/types";
 
 function getDb() {
@@ -107,9 +108,13 @@ export async function getPlayers(clubId: string): Promise<Player[]> {
 }
 
 export async function getActivePlayers(clubId: string): Promise<Player[]> {
-  return getDocuments<Player>(
-    "players", where("clubId", "==", clubId), where("active", "==", true), orderBy("number", "asc")
-  );
+  try {
+    return await getDocuments<Player>(
+      "players", where("clubId", "==", clubId), where("active", "==", true), orderBy("number", "asc")
+    );
+  } catch {
+    return [];
+  }
 }
 
 export async function getPlayer(id: string): Promise<Player | null> {
@@ -128,9 +133,13 @@ export async function getPlayerStats(playerId: string): Promise<PlayerStats | nu
 }
 
 export async function getMatches(clubId: string): Promise<Match[]> {
-  return getDocuments<Match>(
-    "matches", where("clubId", "==", clubId), orderBy("date", "desc")
-  );
+  try {
+    return await getDocuments<Match>(
+      "matches", where("clubId", "==", clubId), orderBy("date", "desc")
+    );
+  } catch {
+    return [];
+  }
 }
 
 export async function getUpcomingMatches(clubId: string, matchLimit = 5): Promise<Match[]> {
@@ -260,5 +269,16 @@ export async function getUserDocument(uid: string): Promise<AppUser | null> {
     return { uid: snap.id, ...snap.data() } as AppUser;
   } catch {
     return null;
+  }
+}
+
+export async function getLNBStats(clubId: string): Promise<LNBPlayerStat[]> {
+  try {
+    const docs = await getDocuments<LNBPlayerStat>(
+      "lnb_stats", where("clubId", "==", clubId), orderBy("pointsPerGame", "desc")
+    );
+    return docs;
+  } catch {
+    return [];
   }
 }

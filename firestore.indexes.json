@@ -93,6 +93,14 @@
         { "fieldPath": "clubId", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "lnb_stats",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "clubId", "order": "ASCENDING" },
+        { "fieldPath": "pointsPerGame", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

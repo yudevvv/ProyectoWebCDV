@@ -6,6 +6,10 @@ import {
   updateDoc,
   deleteDoc,
   serverTimestamp,
+  writeBatch,
+  query,
+  where,
+  getDocs,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { db, storage } from "@/lib/firebase/client";
@@ -369,6 +373,21 @@ export async function updateUserClubs(uid: string, clubs: Record<string, UserRol
 export async function updateUserRole(uid: string, superadmin: boolean) {
   const dbInstance = await getDb();
   await updateDoc(doc(dbInstance, "users", uid), { "roles.superadmin": superadmin });
+}
+
+// ---- LNB Stats ----
+export async function saveLNBStats(
+  clubId: string,
+  players: Array<{ playerName: string; teamName: string; position: string; gamesPlayed: number; minutesPerGame: number; pointsPerGame: number; reboundsPerGame: number; assistsPerGame: number; stealsPerGame: number; blocksPerGame: number; fieldGoalPct: number; threePointPct: number; freeThrowPct: number; efficiency: number }>
+) {
+  const dbInstance = await getDb();
+  const batch = writeBatch(dbInstance);
+  const existing = await getDocs(query(collection(dbInstance, "lnb_stats"), where("clubId", "==", clubId)));
+  existing.forEach((d) => batch.delete(d.ref));
+  for (const p of players) {
+    batch.set(doc(collection(dbInstance, "lnb_stats")), { ...p, clubId, scrapedAt: serverTimestamp() });
+  }
+  await batch.commit();
 }
 
 // ---- Upload ----
