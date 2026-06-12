@@ -9,6 +9,7 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   type User,
+  type UserCredential,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
 
@@ -16,7 +17,7 @@ type AuthContextType = {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string) => Promise<UserCredential>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -48,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (email: string, password: string) => {
     if (!auth) throw new Error("Firebase Auth not initialized");
-    await createUserWithEmailAndPassword(auth, email, password);
+    return createUserWithEmailAndPassword(auth, email, password);
   };
 
   const loginWithGoogle = async () => {

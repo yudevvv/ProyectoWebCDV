@@ -4,6 +4,7 @@ export type Club = {
   id: string;
   name: string;
   slug: string;
+  ownerId?: string;
   logo: string;
   banner: string;
   description: string;

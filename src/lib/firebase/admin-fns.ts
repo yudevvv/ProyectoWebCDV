@@ -20,6 +20,8 @@ import type {
   ClubHistory,
   TimelineEvent,
   Achievement,
+  AppUser,
+  UserRole,
 } from "@/types";
 
 function getDb() {
@@ -297,6 +299,24 @@ export async function updateClub(id: string, data: Partial<Club>) {
     ...data,
     updatedAt: serverTimestamp(),
   });
+}
+
+// ---- Users ----
+export async function createUserDocument(uid: string, data: Pick<AppUser, "email" | "displayName">) {
+  const dbInstance = await getDb();
+  await setDoc(doc(dbInstance, "users", uid), {
+    uid,
+    email: data.email,
+    displayName: data.displayName,
+    photoURL: "",
+    roles: { superadmin: false, clubs: {} },
+    createdAt: serverTimestamp(),
+  });
+}
+
+export async function updateUserClubs(uid: string, clubs: Record<string, UserRole>) {
+  const dbInstance = await getDb();
+  await updateDoc(doc(dbInstance, "users", uid), { "roles.clubs": clubs });
 }
 
 // ---- Upload ----

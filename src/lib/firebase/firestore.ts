@@ -23,6 +23,7 @@ import type {
   ClubHistory,
   TimelineEvent,
   Achievement,
+  AppUser,
 } from "@/types";
 
 function getDb() {
@@ -72,6 +73,28 @@ export async function getClubBySlug(slug: string): Promise<Club | null> {
 
 export async function getClub(id: string): Promise<Club | null> {
   return getDocument<Club>("clubs", id);
+}
+
+export async function getClubsByUser(uid: string): Promise<Club[]> {
+  try {
+    const owned = await getDocuments<Club>(
+      "clubs", where("ownerId", "==", uid)
+    );
+    const userDoc = await getUserDocument(uid);
+    if (!userDoc) return owned;
+    const clubIds = Object.keys(userDoc.roles.clubs);
+    if (clubIds.length === 0) return owned;
+    const assigned = await Promise.all(clubIds.map((id) => getClub(id)));
+    const merged = [...owned, ...assigned.filter((c): c is Club => c !== null)];
+    const seen = new Set<string>();
+    return merged.filter((c) => {
+      if (seen.has(c.id)) return false;
+      seen.add(c.id);
+      return true;
+    });
+  } catch {
+    return [];
+  }
 }
 
 export async function getPlayers(clubId: string): Promise<Player[]> {
@@ -207,4 +230,15 @@ export async function getMembers(clubId: string): Promise<Member[]> {
   return getDocuments<Member>(
     "members", where("clubId", "==", clubId), orderBy("createdAt", "desc")
   );
+}
+
+export async function getUserDocument(uid: string): Promise<AppUser | null> {
+  try {
+    const docRef = doc(getDb(), "users", uid);
+    const snap = await getDoc(docRef);
+    if (!snap.exists()) return null;
+    return { uid: snap.id, ...snap.data() } as AppUser;
+  } catch {
+    return null;
+  }
 }

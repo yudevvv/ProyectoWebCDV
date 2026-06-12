@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
+import { createUserDocument } from "@/lib/firebase/admin-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,7 +37,11 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await register(email, password);
+      const userCredential = await register(email, password);
+      await createUserDocument(userCredential.user.uid, {
+        email,
+        displayName: email.split("@")[0],
+      });
       toast.success("Cuenta creada exitosamente");
       router.push("/admin");
     } catch (err: unknown) {
