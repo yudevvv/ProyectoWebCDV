@@ -358,29 +358,35 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
     doc.line(14, y, 196, y);
     y += 8;
 
-    // ── Summary Cards ──
-    doc.setFontSize(9);
-    doc.setTextColor(80);
-    const summaryData = [
-      [`${activeMembers}`, `${members.length}`, `${formatCurrency(totalMonthly)}`, `${formatCurrency(totalPaid)}`, `${overdueMembers.length}`],
+    // ── Summary ──
+    const summaryLeft = 14;
+    const summaryRight = 196;
+    const summaryWidth = summaryRight - summaryLeft;
+    const summaryCols = 5;
+    const summaryColW = summaryWidth / summaryCols;
+
+    const summaryValues = [
+      `${activeMembers}`,
+      `${members.length}`,
+      `${formatCurrency(totalMonthly)}`,
+      `${formatCurrency(totalPaid)}`,
+      `${overdueMembers.length}`,
     ];
-    autoTable(doc, {
-      body: summaryData,
-      theme: "plain",
-      styles: { fontSize: 16, halign: "center", textColor: [0, 150, 136] },
-      columnStyles: { 0: { halign: "center" }, 1: { halign: "center" }, 2: { halign: "center" }, 3: { halign: "center" }, 4: { halign: "center" } },
-      margin: { left: 14, right: 14 },
-      startY: y,
+    const summaryLabels = ["Activos", "Total socios", "Aporte mensual", "Total recaudado", "Vencidos"];
+
+    doc.setFontSize(16);
+    doc.setTextColor(0, 150, 136);
+    summaryValues.forEach((v, i) => {
+      const cx = summaryLeft + summaryColW * i + summaryColW / 2;
+      doc.text(v, cx, y, { align: "center" });
     });
-    y = (doc as typeof doc & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 2;
+    y += 7;
 
     doc.setFontSize(7);
     doc.setTextColor(120);
-    const labelRow = ["Activos", "Total socios", "Aporte mensual", "Total recaudado", "Vencidos"];
-    const labelX = [14, 48, 84, 118, 152];
-    const colW = 32;
-    labelRow.forEach((l, i) => {
-      doc.text(l, labelX[i] + colW / 2, y, { align: "center" });
+    summaryLabels.forEach((l, i) => {
+      const cx = summaryLeft + summaryColW * i + summaryColW / 2;
+      doc.text(l, cx, y, { align: "center" });
     });
     y += 8;
 
