@@ -40,12 +40,17 @@ const PAYMENT_METHODS = [
 
 function dateToTimestamp(dateStr: string) {
   if (!dateStr) return undefined;
-  return Timestamp.fromDate(new Date(dateStr));
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return Timestamp.fromDate(new Date(y, m - 1, d));
 }
 
 function timestampToDateStr(ts: Timestamp | undefined | null) {
   if (!ts) return "";
-  return new Date(ts.seconds * 1000).toISOString().split("T")[0];
+  const d = new Date(ts.seconds * 1000);
+  const y = d.getFullYear();
+  const mo = String(d.getMonth() + 1).padStart(2, "0");
+  const da = String(d.getDate()).padStart(2, "0");
+  return `${y}-${mo}-${da}`;
 }
 
 function formatDate(ts: Timestamp | undefined | null) {
@@ -159,10 +164,12 @@ export default function AdminSociosPage({ params }: AdminSociosPageProps) {
   };
 
   const handleStartDateChange = (val: string) => {
+    const [y, m, d] = val.split("-").map(Number);
+    const start = new Date(y, m - 1, d);
     setForm({
       ...form,
       startDate: val,
-      endDate: val ? timestampToDateStr(Timestamp.fromDate(addMonths(new Date(val), 1))) : "",
+      endDate: val ? timestampToDateStr(Timestamp.fromDate(addMonths(start, 1))) : "",
     });
   };
 
