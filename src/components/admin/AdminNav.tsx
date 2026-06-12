@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useClub } from "@/hooks/useFirestore";
-import Image from "next/image";
+
 
 type AdminNavProps = {
   clubId: string;
@@ -31,12 +31,10 @@ export function AdminNav({ clubId }: AdminNavProps) {
     <nav className="border-b bg-white">
       <div className="container mx-auto flex h-14 items-center gap-3 px-4" style={{ borderBottom: `2px solid ${primary}18` }}>
         {club?.logo ? (
-          <Image
+          <img
             src={club.logo}
             alt={club.name}
-            width={28}
-            height={28}
-            className="rounded-full object-cover shrink-0"
+            className="w-7 h-7 rounded-full object-cover shrink-0"
           />
         ) : (
           <div

@@ -2,8 +2,6 @@ import { notFound } from "next/navigation";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getClubBySlug, getTeamStats, getActivePlayers, getMatches, getMembers, getNews, getProducts, getSponsors } from "@/lib/firebase/firestore";
-import Image from "next/image";
-
 export default async function AdminDashboard({
   params,
 }: {
@@ -50,12 +48,10 @@ export default async function AdminDashboard({
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center gap-3 mb-8">
           {club.logo && (
-            <Image
+            <img
               src={club.logo}
               alt={club.name}
-              width={40}
-              height={40}
-              className="rounded-lg object-cover"
+              className="w-10 h-10 rounded-lg object-cover"
             />
           )}
           <div>

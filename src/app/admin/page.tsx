@@ -10,7 +10,7 @@ import { createUserDocument } from "@/lib/firebase/admin-fns";
 import { getUserDocument } from "@/lib/firebase/firestore";
 import type { Club } from "@/types";
 import Link from "next/link";
-import Image from "next/image";
+
 
 
 export default function AdminPage() {
@@ -107,12 +107,10 @@ export default function AdminPage() {
                 <Card className="h-full hover:border-primary transition-colors cursor-pointer">
                   <CardHeader className="flex flex-row items-center gap-4 pb-3">
                     {club.logo ? (
-                      <Image
+                      <img
                         src={club.logo}
                         alt={club.name}
-                        width={40}
-                        height={40}
-                        className="rounded-lg object-cover"
+                        className="w-10 h-10 rounded-lg object-cover"
                       />
                     ) : (
                       <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center text-lg font-bold text-muted-foreground">
