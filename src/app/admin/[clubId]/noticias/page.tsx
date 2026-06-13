@@ -163,7 +163,7 @@ export default function AdminNoticiasPage({ params }: AdminNoticiasPageProps) {
           </div>
         </div>
 
-        <DataTable columns={columns} data={news} keyExtractor={(n) => n.id} onEdit={isDemo ? undefined : openEdit} onDelete={isDemo ? undefined : handleDelete} />
+        <DataTable columns={columns} data={news} keyExtractor={(n) => n.id} onEdit={isDemo ? undefined : openEdit} onDelete={isDemo ? undefined : handleDelete} searchable searchKeys={["title", "author", "excerpt"]} searchPlaceholder="Buscar por título, autor..." pageSize={10} />
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent className="sm:max-w-xl">

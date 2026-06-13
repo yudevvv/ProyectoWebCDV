@@ -197,6 +197,10 @@ export default function AdminPartidosPage({ params }: AdminPartidosPageProps) {
           keyExtractor={(m) => m.id}
           onEdit={isDemo ? undefined : openEdit}
           onDelete={isDemo ? undefined : handleDelete}
+          searchable
+          searchKeys={["opponent", "location", "competition"]}
+          searchPlaceholder="Buscar por rival, lugar, competencia..."
+          pageSize={10}
         />
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

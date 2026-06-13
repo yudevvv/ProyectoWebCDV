@@ -132,6 +132,10 @@ export default function AdminJugadoresPage({
             setDialogOpen(true);
           }}
           onDelete={isDemo ? undefined : handleDelete}
+          searchable
+          searchKeys={["firstName", "lastName", "position"]}
+          searchPlaceholder="Buscar por nombre, posición..."
+          pageSize={10}
         />
 
         <PlayerDialog

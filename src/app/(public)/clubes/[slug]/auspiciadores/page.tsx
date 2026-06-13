@@ -80,8 +80,8 @@ export default async function AuspiciadoresPage({
                           {sponsor.contributionType === "monetario"
                             ? `${(sponsor.contributionAmount || 0).toLocaleString("es-CL")} ${sponsor.contributionCurrency || "CLP"}`
                             : sponsor.contributionType === "servicio"
-                              ? "Servicios"
-                              : "Productos"}
+                              ? `Servicios: ${sponsor.contributionDetail || "—"}`
+                              : `Productos: ${sponsor.contributionDetail || "—"}`}
                         </p>
                         {sponsor.complianceStatus && (
                           <Badge className={complianceColors[sponsor.complianceStatus] || complianceColors.pendiente}>

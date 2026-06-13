@@ -255,11 +255,13 @@ export type Sponsor = {
   tier: SponsorTier;
   description?: string;
   contributionType: ContributionType;
+  contributionDetail?: string;
   contributionAmount: number;
   contributionCurrency: "CLP" | "USD";
   complianceStatus: "pendiente" | "cumpliendo" | "incumplido";
   complianceNotes?: string;
   incumplidoReason?: string;
+  contractFile?: string;
   active: boolean;
   startDate: Timestamp;
   endDate?: Timestamp;

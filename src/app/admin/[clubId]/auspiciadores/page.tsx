@@ -13,14 +13,16 @@ import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { createSponsor, updateSponsor, deleteSponsor } from "@/lib/firebase/admin-fns";
+import { createSponsor, updateSponsor, deleteSponsor, uploadFile } from "@/lib/firebase/admin-fns";
 import { getSponsors } from "@/lib/firebase/firestore";
 import { useClub } from "@/hooks/useFirestore";
 import type { Sponsor, ContributionType } from "@/types";
 import { Timestamp } from "firebase/firestore";
 import { toast } from "sonner";
 import { useDemoMode } from "@/lib/demo-mode";
-import { FileDown, Plus, FlaskConical, ShieldAlert } from "lucide-react";
+import { FileDown, Plus, FlaskConical, ShieldAlert, FileText, X, TrashIcon } from "lucide-react";
+import { collection, getDocs, writeBatch } from "firebase/firestore";
+import { db } from "@/lib/firebase/client";
 
 const tierColors: Record<string, string> = {
   gold: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
@@ -60,7 +62,7 @@ function formatCurrency(n: number, currency = "CLP") {
 
 function cleanPayload<T extends Record<string, unknown>>(obj: T): Partial<T> {
   return Object.fromEntries(
-    Object.entries(obj).filter(([, v]) => v !== undefined)
+    Object.entries(obj).filter(([, v]) => v !== undefined && v !== "")
   ) as Partial<T>;
 }
 
@@ -71,6 +73,7 @@ type SponsorFormData = {
   tier: Sponsor["tier"];
   description: string;
   contributionType: ContributionType;
+  contributionDetail: string;
   contributionAmount: number;
   contributionCurrency: "CLP" | "USD";
   complianceStatus: Sponsor["complianceStatus"];
@@ -82,7 +85,8 @@ type SponsorFormData = {
 
 const defaultForm: SponsorFormData = {
   name: "", logo: "", website: "", tier: "bronze", description: "",
-  contributionType: "monetario", contributionAmount: 0, contributionCurrency: "CLP",
+  contributionType: "monetario", contributionDetail: "",
+  contributionAmount: 0, contributionCurrency: "CLP",
   complianceStatus: "pendiente", complianceNotes: "", incumplidoReason: "",
   startDate: "", endDate: "",
 };
@@ -98,8 +102,11 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingSponsor, setEditingSponsor] = useState<Sponsor | null>(null);
   const [form, setForm] = useState<SponsorFormData>(defaultForm);
-  const [formErrors, setFormErrors] = useState<Partial<Record<keyof SponsorFormData, string>>>({});
+  const [formErrors, setFormErrors] = useState<Partial<Record<keyof SponsorFormData | "contractFile", string>>>({});
   const [saving, setSaving] = useState(false);
+  const [contractFile, setContractFile] = useState<File | null>(null);
+  const [existingContract, setExistingContract] = useState<string>("");
+  const [uploadingContract, setUploadingContract] = useState(false);
   const { isDemo } = useDemoMode(clubId);
   const { data: club } = useClub(clubId);
 
@@ -116,10 +123,16 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
   }, [clubId]);
 
   const validateForm = (): boolean => {
-    const errors: Partial<Record<keyof SponsorFormData, string>> = {};
+    const errors: Partial<Record<keyof SponsorFormData | "contractFile", string>> = {};
     if (!form.name.trim()) errors.name = "Nombre requerido";
     if (form.complianceStatus === "incumplido" && !form.incumplidoReason.trim())
       errors.incumplidoReason = "Debes indicar el motivo del incumplimiento";
+    if (form.contributionType === "servicio" && !form.contributionDetail.trim())
+      errors.contributionDetail = "Indica qué servicio brinda al club";
+    if (form.contributionType === "producto" && !form.contributionDetail.trim())
+      errors.contributionDetail = "Indica qué producto brinda al club";
+    if (contractFile && contractFile.size > 10 * 1024 * 1024)
+      errors.contractFile = "El archivo no debe superar los 10MB";
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -129,6 +142,23 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
     if (isDemo) { toast.error("Accion no disponible en modo demo"); return; }
     if (!validateForm()) return;
 
+    let contractUrl = existingContract;
+
+    if (contractFile) {
+      setUploadingContract(true);
+      try {
+        contractUrl = await uploadFile(
+          `sponsors/${clubId}/${Date.now()}-${contractFile.name}`,
+          contractFile
+        );
+      } catch {
+        toast.error("Error al subir el archivo");
+        setUploadingContract(false);
+        return;
+      }
+      setUploadingContract(false);
+    }
+
     const payload = cleanPayload({
       name: form.name,
       logo: form.logo || undefined,
@@ -136,11 +166,13 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
       tier: form.tier,
       description: form.description || undefined,
       contributionType: form.contributionType,
+      contributionDetail: form.contributionDetail || undefined,
       contributionAmount: form.contributionType === "monetario" ? form.contributionAmount : 0,
       contributionCurrency: form.contributionType === "monetario" ? form.contributionCurrency : undefined,
       complianceStatus: form.complianceStatus,
       complianceNotes: form.complianceNotes || undefined,
       incumplidoReason: form.complianceStatus === "incumplido" ? form.incumplidoReason : undefined,
+      contractFile: contractUrl || undefined,
       startDate: dateToTimestamp(form.startDate),
       endDate: dateToTimestamp(form.endDate),
     });
@@ -158,6 +190,8 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
       setEditingSponsor(null);
       setForm(defaultForm);
       setFormErrors({});
+      setContractFile(null);
+      setExistingContract("");
       await refreshSponsors(clubId);
     } catch (e) {
       console.error(e);
@@ -172,6 +206,22 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
     try {
       await deleteSponsor(sponsor.id);
       toast.success("Auspiciador eliminado");
+      await refreshSponsors(clubId);
+    } catch (e) {
+      console.error(e);
+      toast.error("Error al eliminar");
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    if (!confirm("¿Eliminar TODOS los auspiciadores? Esta acción no se puede deshacer.")) return;
+    if (!db) { toast.error("Firestore no disponible"); return; }
+    try {
+      const snap = await getDocs(collection(db, "sponsors"));
+      const batch = writeBatch(db);
+      snap.docs.forEach((d) => batch.delete(d.ref));
+      await batch.commit();
+      toast.success("Todos los auspiciadores eliminados");
       await refreshSponsors(clubId);
     } catch (e) {
       console.error(e);
@@ -267,19 +317,19 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
 
     const rows = sponsors.map((s) => [
       s.name, s.tier,
-      s.contributionType === "monetario" ? `${formatCurrency(s.contributionAmount || 0, s.contributionCurrency || "CLP")}` : s.contributionType === "servicio" ? "Servicio" : "Producto",
+      s.contributionType === "monetario" ? `${formatCurrency(s.contributionAmount || 0, s.contributionCurrency || "CLP")}` : s.contributionType === "servicio" ? `Servicio: ${s.contributionDetail || "—"}` : `Producto: ${s.contributionDetail || "—"}`,
       formatDate(s.startDate), formatDate(s.endDate),
       computeStatus(s) === "cumpliendo" ? "Cumpliendo" : computeStatus(s) === "incumplido" ? "Incumplido" : "Pendiente",
     ]);
 
     autoTable(doc, {
-      head: [["Nombre", "Categoría", "Aporte", "Inicio", "Término", "Estado"]],
+      head: [["Nombre", "Categoría", "Aporte / Detalle", "Inicio", "Término", "Estado"]],
       body: rows,
       startY: y,
       margin: { left: 14, right: 14 },
       styles: { fontSize: 8, cellPadding: 2 },
       headStyles: { fillColor: [0, 150, 136], textColor: 255, fontStyle: "bold", fontSize: 8 },
-      columnStyles: { 0: { cellWidth: 44 }, 1: { cellWidth: 18 }, 2: { cellWidth: 30, halign: "right" }, 3: { cellWidth: 22, halign: "center" }, 4: { cellWidth: 22, halign: "center" }, 5: { cellWidth: 22, halign: "center" } },
+      columnStyles: { 0: { cellWidth: 38 }, 1: { cellWidth: 16 }, 2: { cellWidth: 38 }, 3: { cellWidth: 22, halign: "center" }, 4: { cellWidth: 22, halign: "center" }, 5: { cellWidth: 22, halign: "center" } },
       alternateRowStyles: { fillColor: [245, 245, 245] },
     });
 
@@ -297,7 +347,16 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
       key: "contribution", header: "Aporte",
       render: (s: Sponsor) => {
         if (s.contributionType === "monetario") return <span className="font-mono text-sm">{formatCurrency(s.contributionAmount || 0, s.contributionCurrency || "CLP")}</span>;
-        return <span className="text-sm">{s.contributionType === "servicio" ? "Servicio" : "Producto"}</span>;
+        const label = s.contributionType === "servicio" ? "Servicio" : "Producto";
+        const detail = s.contributionDetail || "";
+        if (!detail) return <span className="text-xs">{label}</span>;
+        const truncated = detail.length > 50 ? `${detail.substring(0, 50)}…` : detail;
+        return (
+          <span className="text-xs" title={`${label}: ${detail}`}>
+            <span className="font-medium">{label}:</span>{" "}
+            {truncated}
+          </span>
+        );
       },
     },
     {
@@ -325,7 +384,17 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
         );
       },
     },
+    {
+      key: "contract", header: "",
+      render: (s: Sponsor) => s.contractFile ? (
+        <a href={s.contractFile} target="_blank" rel="noopener noreferrer" title="Ver contrato">
+          <FileText className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+        </a>
+      ) : null,
+    },
   ];
+
+  const contributionTypeLabel = form.contributionType === "servicio" ? "servicio" : "producto";
 
   if (loading) {
     return (
@@ -355,44 +424,49 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
           </div>
           <div className="flex gap-2">
             {process.env.NODE_ENV === "development" && (
-              <Button variant="outline" size="sm" onClick={async () => {
-                const names = ["Deportes Martínez", "SportFit Chile", "BasketPro Store", "Gatorade Chile", "Nike Chile", "Adidas Chile", "Spalding Latinoamérica", "Powerade Chile", "Wilson Sports", "Molec Sports", "Clínica Deportiva", "Radio Sport Chile", "Cerveza Andes", "Transportes Rápidos", "Hotel Deportivo", "Agencia BasketTotal", "Agua Vital", "Seguros Deportivos", "Gimnasio FIT24", "Distribuidora Deportiva"];
-                const logos = ["", "", "https://logo.clearbit.com/basketpro.store", "", "https://logo.clearbit.com/nike.com", "https://logo.clearbit.com/adidas.com", "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
-                const tiers: Sponsor["tier"][] = ["gold", "gold", "gold", "silver", "gold", "gold", "silver", "silver", "silver", "bronze", "bronze", "bronze", "silver", "bronze", "bronze", "gold", "bronze", "silver", "bronze", "bronze"];
-                const cTypes: ContributionType[] = ["monetario", "monetario", "producto", "monetario", "producto", "producto", "producto", "monetario", "producto", "servicio", "servicio", "servicio", "monetario", "servicio", "servicio", "servicio", "producto", "servicio", "servicio", "producto"];
-                const amounts = [5000000, 3000000, 0, 8000000, 0, 0, 0, 2000000, 0, 0, 0, 0, 1500000, 0, 0, 0, 0, 0, 0, 0];
-                const currencies = ["CLP", "CLP", "CLP", "CLP", "CLP", "CLP", "CLP", "USD", "CLP", "CLP", "CLP", "CLP", "CLP", "CLP", "CLP", "CLP", "CLP", "CLP", "CLP", "CLP"];
-                const cStatuses: Sponsor["complianceStatus"][] = ["cumpliendo", "cumpliendo", "cumpliendo", "cumpliendo", "cumpliendo", "cumpliendo", "cumpliendo", "pendiente", "cumpliendo", "incumplido", "cumpliendo", "cumpliendo", "cumpliendo", "cumpliendo", "pendiente", "cumpliendo", "cumpliendo", "pendiente", "cumpliendo", "incumplido"];
-                const pendToast = toast.loading("Insertando 20 auspiciadores...");
-                for (let i = 0; i < names.length; i++) {
-                  const startDate = new Date();
-                  startDate.setMonth(startDate.getMonth() - Math.floor(Math.random() * 4));
-                  const endDate = new Date(startDate);
-                  endDate.setMonth(endDate.getMonth() + 6 + Math.floor(Math.random() * 6));
-                  try {
-                    await createSponsor(clubId, {
-                      name: names[i], logo: logos[i], website: "",
-                      tier: tiers[i], description: `Auspiciador oficial del club`,
-                      contributionType: cTypes[i], contributionAmount: amounts[i],
-                      contributionCurrency: currencies[i] as "CLP" | "USD",
-                      complianceStatus: cStatuses[i],
-                      complianceNotes: cStatuses[i] === "incumplido" ? "No ha realizado el aporte comprometido" : "",
-                      startDate: Timestamp.fromDate(startDate),
-                      endDate: Timestamp.fromDate(endDate),
-                    });
-                  } catch { /* skip */ }
-                }
-                toast.dismiss(pendToast);
-                toast.success("20 auspiciadores insertados");
-                await refreshSponsors(clubId);
-              }}>
-                <FlaskConical className="h-4 w-4 mr-1" /> Seed 20
-              </Button>
+              <>
+                <Button variant="outline" size="sm" onClick={handleDeleteAll} className="text-red-500 border-red-200 hover:bg-red-50 dark:hover:bg-red-950">
+                  <TrashIcon className="h-4 w-4 mr-1" /> Limpiar todo
+                </Button>
+                <Button variant="outline" size="sm" onClick={async () => {
+                  const names = ["Deportes Martínez", "SportFit Chile", "BasketPro Store", "Gatorade Chile", "Nike Chile", "Adidas Chile", "Spalding Latinoamérica", "Powerade Chile", "Wilson Sports", "Molec Sports", "Clínica Deportiva", "Radio Sport Chile", "Cerveza Andes", "Transportes Rápidos", "Hotel Deportivo", "Agencia BasketTotal", "Agua Vital", "Seguros Deportivos", "Gimnasio FIT24", "Distribuidora Deportiva"];
+                  const tiers: Sponsor["tier"][] = ["gold", "gold", "gold", "silver", "gold", "gold", "silver", "silver", "silver", "bronze", "bronze", "bronze", "silver", "bronze", "bronze", "gold", "bronze", "silver", "bronze", "bronze"];
+                  const cTypes: ContributionType[] = ["monetario", "monetario", "producto", "monetario", "producto", "producto", "producto", "monetario", "producto", "servicio", "servicio", "servicio", "monetario", "servicio", "servicio", "servicio", "producto", "servicio", "servicio", "producto"];
+                  const cDetails: string[] = ["", "", "Indumentaria deportiva oficial", "", "Zapatillas y ropa deportiva", "Ropa de entrenamiento", "Balones de básquetbol", "", "Raquetas y accesorios", "Mantenimiento de instalaciones", "Atención médica gratuita para jugadores", "Transmisión de partidos en vivo", "", "Transporte para jugadores", "Alojamiento para partidos de visita", "Cobertura de prensa del club", "Hidratación para entrenamientos", "Seguro contra lesiones deportivas", "Entrenamiento funcional semanal", "Equipamiento de oficina"];
+                  const amounts = [5000000, 3000000, 0, 8000000, 0, 0, 0, 2000000, 0, 0, 0, 0, 1500000, 0, 0, 0, 0, 0, 0, 0];
+                  const currencies = ["CLP", "CLP", "CLP", "CLP", "CLP", "CLP", "CLP", "USD", "CLP", "CLP", "CLP", "CLP", "CLP", "CLP", "CLP", "CLP", "CLP", "CLP", "CLP", "CLP"];
+                  const cStatuses: Sponsor["complianceStatus"][] = ["cumpliendo", "cumpliendo", "cumpliendo", "cumpliendo", "cumpliendo", "cumpliendo", "cumpliendo", "pendiente", "cumpliendo", "incumplido", "cumpliendo", "cumpliendo", "cumpliendo", "cumpliendo", "pendiente", "cumpliendo", "cumpliendo", "pendiente", "cumpliendo", "incumplido"];
+                  const pendToast = toast.loading("Insertando 20 auspiciadores...");
+                  for (let i = 0; i < names.length; i++) {
+                    const startDate = new Date();
+                    startDate.setMonth(startDate.getMonth() - Math.floor(Math.random() * 4));
+                    const endDate = new Date(startDate);
+                    endDate.setMonth(endDate.getMonth() + 6 + Math.floor(Math.random() * 6));
+                    try {
+                      await createSponsor(clubId, {
+                        name: names[i], logo: "", website: "",
+                        tier: tiers[i], description: `Auspiciador oficial del club`,
+                        contributionType: cTypes[i], contributionDetail: cDetails[i] || undefined,
+                        contributionAmount: amounts[i], contributionCurrency: currencies[i] as "CLP" | "USD",
+                        complianceStatus: cStatuses[i],
+                        complianceNotes: cStatuses[i] === "incumplido" ? "No ha realizado el aporte comprometido" : "",
+                        startDate: Timestamp.fromDate(startDate),
+                        endDate: Timestamp.fromDate(endDate),
+                      });
+                    } catch { /* skip */ }
+                  }
+                  toast.dismiss(pendToast);
+                  toast.success("20 auspiciadores insertados");
+                  await refreshSponsors(clubId);
+                }}>
+                  <FlaskConical className="h-4 w-4 mr-1" /> Seed 20
+                </Button>
+              </>
             )}
             <Button variant="outline" onClick={downloadReport} disabled={sponsors.length === 0} size="sm">
               <FileDown className="h-4 w-4 mr-1" /> Informe
             </Button>
-            <Button onClick={() => { setEditingSponsor(null); setForm(defaultForm); setFormErrors({}); setDialogOpen(true); }} disabled={isDemo} size="sm">
+            <Button onClick={() => { setEditingSponsor(null); setForm(defaultForm); setFormErrors({}); setContractFile(null); setExistingContract(""); setDialogOpen(true); }} disabled={isDemo} size="sm">
               <Plus className="h-4 w-4 mr-1" /> Auspiciador
             </Button>
           </div>
@@ -404,7 +478,7 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
           keyExtractor={(s) => s.id}
           searchable
           searchPlaceholder="Buscar auspiciador..."
-          searchKeys={["name", "tier", "contributionType", "complianceStatus"]}
+          searchKeys={["name", "tier", "contributionType", "complianceStatus", "contributionDetail"]}
           pageSize={10}
           onEdit={isDemo ? undefined : (s) => {
             setEditingSponsor(s);
@@ -412,6 +486,7 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
               name: s.name, logo: s.logo, website: s.website || "", tier: s.tier,
               description: s.description || "",
               contributionType: s.contributionType || "monetario",
+              contributionDetail: s.contributionDetail || "",
               contributionAmount: s.contributionAmount || 0,
               contributionCurrency: s.contributionCurrency || "CLP",
               complianceStatus: s.complianceStatus || "pendiente",
@@ -420,19 +495,21 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
               startDate: timestampToDateStr(s.startDate),
               endDate: timestampToDateStr(s.endDate),
             });
+            setExistingContract(s.contractFile || "");
+            setContractFile(null);
             setFormErrors({});
             setDialogOpen(true);
           }}
           onDelete={isDemo ? undefined : handleDelete}
         />
 
-        <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) { setEditingSponsor(null); setFormErrors({}); } setDialogOpen(open); }}>
+        <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) { setEditingSponsor(null); setFormErrors({}); setContractFile(null); setExistingContract(""); } setDialogOpen(open); }}>
           <DialogContent className="sm:max-w-xl">
             <DialogHeader>
               <DialogTitle>{editingSponsor ? "Editar Auspiciador" : "Nuevo Auspiciador"}</DialogTitle>
               <DialogDescription>Completa los datos del auspiciador</DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+            <form onSubmit={handleSubmit} className="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="sp-name">Nombre</Label>
@@ -468,7 +545,10 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="sp-ctype">Tipo de aporte</Label>
-                  <Select value={form.contributionType} onValueChange={(v) => setForm({ ...form, contributionType: (v ?? "monetario") as ContributionType })}>
+                  <Select value={form.contributionType} onValueChange={(v) => {
+                    const ct = (v ?? "monetario") as ContributionType;
+                    setForm({ ...form, contributionType: ct, contributionDetail: ct === form.contributionType ? form.contributionDetail : "" });
+                  }}>
                     <SelectTrigger id="sp-ctype"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="monetario">Monetario</SelectItem>
@@ -496,11 +576,26 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <Label>Detalle</Label>
-                    <p className="text-xs text-muted-foreground pt-2">Aporte en {form.contributionType === "servicio" ? "servicios" : "productos"}</p>
+                    <Label htmlFor="sp-detail">
+                      ¿Qué {contributionTypeLabel} brinda al club?
+                    </Label>
+                    {formErrors.contributionDetail && <p className="text-xs text-red-500">{formErrors.contributionDetail}</p>}
                   </div>
                 )}
               </div>
+              {(form.contributionType === "servicio" || form.contributionType === "producto") && (
+                <div className="space-y-2">
+                  <textarea
+                    id="sp-detail"
+                    className="flex min-h-[80px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                    value={form.contributionDetail}
+                    onChange={(e) => setForm({ ...form, contributionDetail: e.target.value })}
+                    placeholder={form.contributionType === "servicio" ? "Ej: Mantención de cancha, atención médica gratuita para jugadores..." : "Ej: Indumentaria deportiva oficial, balones, equipamiento..."}
+                    required
+                  />
+                  {formErrors.contributionDetail && <p className="text-xs text-red-500">{formErrors.contributionDetail}</p>}
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="sp-start">Fecha de inicio</Label>
@@ -548,9 +643,54 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
                   {formErrors.incumplidoReason && <p className="text-xs text-red-500">{formErrors.incumplidoReason}</p>}
                 </div>
               )}
+
+              {/* Contract file upload */}
+              <div className="space-y-2">
+                <Label>Contrato de auspicio (PDF, opcional)</Label>
+                <p className="text-xs text-muted-foreground">Máximo 10MB. Solo visible para administradores.</p>
+                {existingContract && !contractFile && (
+                  <div className="flex items-center gap-2 rounded-lg border bg-muted/50 p-2 text-sm">
+                    <FileText className="h-4 w-4 text-cyan-600" />
+                    <a href={existingContract} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate flex-1">
+                      Contrato actual
+                    </a>
+                    <Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive" onClick={() => { setExistingContract(""); setContractFile(null); }}>
+                      <X className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="sp-contract"
+                    type="file"
+                    accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                    className="text-sm file:mr-2 file:py-1 file:px-3 file:rounded-md file:border-0 file:bg-cyan-50 file:text-cyan-700 dark:file:bg-cyan-950 dark:file:text-cyan-300 hover:file:bg-cyan-100"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        if (file.size > 10 * 1024 * 1024) {
+                          toast.error("El archivo no debe superar los 10MB");
+                          e.target.value = "";
+                          return;
+                        }
+                        setContractFile(file);
+                      }
+                    }}
+                  />
+                  {contractFile && (
+                    <span className="text-xs text-muted-foreground shrink-0">
+                      {(contractFile.size / 1024 / 1024).toFixed(1)} MB
+                    </span>
+                  )}
+                </div>
+                {formErrors.contractFile && <p className="text-xs text-red-500">{formErrors.contractFile}</p>}
+              </div>
+
               <div className="flex justify-end gap-3 pt-2 sticky bottom-0 bg-background py-2 border-t">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>Cancelar</Button>
-                <Button type="submit" disabled={saving}>{saving ? "Guardando..." : editingSponsor ? "Actualizar" : "Guardar"}</Button>
+                <Button type="submit" disabled={saving || uploadingContract}>
+                  {uploadingContract ? "Subiendo archivo..." : saving ? "Guardando..." : editingSponsor ? "Actualizar" : "Guardar"}
+                </Button>
               </div>
             </form>
           </DialogContent>
