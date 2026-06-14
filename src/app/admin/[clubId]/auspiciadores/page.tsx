@@ -394,8 +394,6 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
     },
   ];
 
-  const contributionTypeLabel = form.contributionType === "servicio" ? "servicio" : "producto";
-
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen">
@@ -542,14 +540,14 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
                 <Label htmlFor="sp-desc">Descripción</Label>
                 <textarea id="sp-desc" className="flex min-h-[60px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="sp-ctype">Tipo de aporte</Label>
                   <Select value={form.contributionType} onValueChange={(v) => {
                     const ct = (v ?? "monetario") as ContributionType;
                     setForm({ ...form, contributionType: ct, contributionDetail: ct === form.contributionType ? form.contributionDetail : "" });
                   }}>
-                    <SelectTrigger id="sp-ctype"><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="sp-ctype" className="w-full"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="monetario">Monetario</SelectItem>
                       <SelectItem value="servicio">Servicio</SelectItem>
@@ -566,7 +564,7 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
                     <div className="space-y-2">
                       <Label htmlFor="sp-currency">Moneda</Label>
                       <Select value={form.contributionCurrency} onValueChange={(v) => setForm({ ...form, contributionCurrency: (v ?? "CLP") as "CLP" | "USD" })}>
-                        <SelectTrigger id="sp-currency"><SelectValue /></SelectTrigger>
+                        <SelectTrigger id="sp-currency" className="w-full"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="CLP">CLP</SelectItem>
                           <SelectItem value="USD">USD</SelectItem>
@@ -576,26 +574,19 @@ export default function AdminAuspiciadoresPage({ params }: AdminAuspiciadoresPag
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <Label htmlFor="sp-detail">
-                      ¿Qué {contributionTypeLabel} brinda al club?
-                    </Label>
+                    <Label>Detalle del aporte</Label>
+                    <textarea
+                      id="sp-detail"
+                      className="flex min-h-[80px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                      value={form.contributionDetail}
+                      onChange={(e) => setForm({ ...form, contributionDetail: e.target.value })}
+                      placeholder={form.contributionType === "servicio" ? "Ej: Mantención de cancha, atención médica gratuita para jugadores..." : "Ej: Indumentaria deportiva oficial, balones, equipamiento..."}
+                      required
+                    />
                     {formErrors.contributionDetail && <p className="text-xs text-red-500">{formErrors.contributionDetail}</p>}
                   </div>
                 )}
               </div>
-              {(form.contributionType === "servicio" || form.contributionType === "producto") && (
-                <div className="space-y-2">
-                  <textarea
-                    id="sp-detail"
-                    className="flex min-h-[80px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                    value={form.contributionDetail}
-                    onChange={(e) => setForm({ ...form, contributionDetail: e.target.value })}
-                    placeholder={form.contributionType === "servicio" ? "Ej: Mantención de cancha, atención médica gratuita para jugadores..." : "Ej: Indumentaria deportiva oficial, balones, equipamiento..."}
-                    required
-                  />
-                  {formErrors.contributionDetail && <p className="text-xs text-red-500">{formErrors.contributionDetail}</p>}
-                </div>
-              )}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="sp-start">Fecha de inicio</Label>
