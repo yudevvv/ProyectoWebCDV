@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Pencil, Trash2 } from "lucide-react";
 
 type Column<T> = {
   key: string;
@@ -117,21 +117,24 @@ export function DataTable<T extends Record<string, unknown>>({
                       <div className="flex items-center justify-end gap-1">
                         {onEdit && (
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
+                            className="h-8 w-8 p-0"
                             onClick={() => onEdit(item)}
+                            title="Editar"
                           >
-                            Editar
+                            <Pencil className="h-3.5 w-3.5" />
                           </Button>
                         )}
                         {onDelete && (
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
-                            className="text-destructive hover:text-destructive"
+                            className="h-8 w-8 p-0 text-destructive border-destructive/30 hover:text-destructive hover:bg-destructive/10"
                             onClick={() => onDelete(item)}
+                            title="Eliminar"
                           >
-                            Eliminar
+                            <Trash2 className="h-3.5 w-3.5" />
                           </Button>
                         )}
                       </div>

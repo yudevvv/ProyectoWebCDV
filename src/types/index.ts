@@ -232,6 +232,7 @@ export type Product = {
   price: number;
   comparePrice?: number;
   stock: number;
+  totalSold: number;
   sku: string;
   category: "clothing" | "accessories" | "equipment" | "other";
   sizes?: string[];
@@ -241,6 +242,19 @@ export type Product = {
   active: boolean;
   createdAt: Timestamp;
   updatedAt: Timestamp;
+};
+
+export type ProductSale = {
+  id: string;
+  clubId: string;
+  productId: string;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+  paymentMethod: "efectivo" | "transferencia" | "tarjeta" | "otro";
+  notes?: string;
+  createdAt: Timestamp;
 };
 
 export type SponsorTier = "gold" | "silver" | "bronze";

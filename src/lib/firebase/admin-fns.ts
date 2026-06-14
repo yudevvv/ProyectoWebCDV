@@ -27,6 +27,7 @@ import type {
   Achievement,
   AppUser,
   UserRole,
+  ProductSale,
 } from "@/types";
 
 function getDb() {
@@ -152,6 +153,7 @@ export async function createProduct(
     ...data,
     description: data.description ?? "",
     stock: data.stock ?? 0,
+    totalSold: data.totalSold ?? 0,
     sku: data.sku ?? "",
     category: data.category ?? "other",
     images: data.images ?? [],
@@ -177,6 +179,33 @@ export async function updateProduct(id: string, data: Partial<Product>) {
 export async function deleteProduct(id: string) {
   const dbInstance = await getDb();
   await deleteDoc(doc(dbInstance, "products", id));
+}
+
+export async function createProductSale(
+  clubId: string,
+  data: {
+    productId: string;
+    productName: string;
+    quantity: number;
+    unitPrice: number;
+    total: number;
+    paymentMethod: ProductSale["paymentMethod"];
+    notes?: string;
+  }
+) {
+  const dbInstance = await getDb();
+  const saleRef = await addDoc(collection(dbInstance, "productSales"), {
+    clubId,
+    productId: data.productId,
+    productName: data.productName,
+    quantity: data.quantity,
+    unitPrice: data.unitPrice,
+    total: data.total,
+    paymentMethod: data.paymentMethod,
+    notes: data.notes ?? "",
+    createdAt: serverTimestamp(),
+  });
+  return saleRef.id;
 }
 
 // ---- Sponsors ----
